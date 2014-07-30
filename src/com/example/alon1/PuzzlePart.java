@@ -95,7 +95,7 @@ public class PuzzlePart {
 	}
 
 	public void setStart(int x, int y) {
-		for (PuzzlePart part : detectAllGlued()) {
+		for (PuzzlePart part : m_glued) {
 			part.setStartSingle(x, y);
 		}
 	}
@@ -106,7 +106,7 @@ public class PuzzlePart {
 	}
 
 	public void move(int x, int y) {
-		for (PuzzlePart part : detectAllGlued()) {
+		for (PuzzlePart part : m_glued) {
 			part.moveSingle(x, y);
 		}
 	}
@@ -123,9 +123,82 @@ public class PuzzlePart {
 	}
 
 	public void rotate() {
-		for (PuzzlePart part : detectAllGlued()) {
+		for (PuzzlePart part : m_glued) {
 			part.rotateSingle();
 		}
+
+		updateGluedLocations();
+	}
+
+	private void updateGluedLocations() {
+
+		HashSet<PuzzlePart> handled = new HashSet<PuzzlePart>();
+		handled.add(this);
+
+		LinkedList<PuzzleConnection> toHandle = new LinkedList<PuzzleConnection>();
+		this.addNeighboursToHandle(toHandle);
+
+		while (!toHandle.isEmpty()) {
+
+			PuzzleConnection connection = toHandle.remove();
+			if (handled.contains(connection.to)) {
+				continue;
+			}
+			handled.add(connection.to);
+
+			connection.from.updateNeighbourLocation(connection.to);
+			connection.to.addNeighboursToHandle(toHandle);
+		}
+	}
+
+	private void addNeighboursToHandle(LinkedList<PuzzleConnection> toHandle) {
+		for (PuzzlePart neighbour : m_neighbours) {
+			if (neighbour == null) {
+				continue;
+			}
+			if (!m_glued.contains(neighbour)) {
+				continue;
+			}
+
+			PuzzleConnection next = new PuzzleConnection(this, neighbour);
+			if (toHandle.contains(next)) {
+				continue;
+			}
+			toHandle.add(next);
+		}
+	}
+
+	private void updateNeighbourLocation(PuzzlePart neighbour) {
+		PuzzlePart part = m_neighbours.get(LEFT);
+		if ((part != null) && (part.equals(neighbour))) {
+			neighbour.m_location = new Rect(m_location.left
+					- m_location.width(), m_location.top, m_location.left,
+					m_location.bottom);
+			return;
+		}
+
+		part = m_neighbours.get(UP);
+		if ((part != null) && (part.equals(neighbour))) {
+			neighbour.m_location = new Rect(m_location.left, m_location.top
+					- m_location.height(), m_location.right, m_location.top);
+			return;
+		}
+
+		part = m_neighbours.get(RIGHT);
+		if ((part != null) && (part.equals(neighbour))) {
+			neighbour.m_location = new Rect(m_location.right, m_location.top,
+					m_location.right + m_location.width(), m_location.bottom);
+			return;
+		}
+
+		part = m_neighbours.get(DOWN);
+		if ((part != null) && (part.equals(neighbour))) {
+			neighbour.m_location = new Rect(m_location.left, m_location.bottom,
+					m_location.right, m_location.bottom + m_location.height());
+			return;
+		}
+
+		throw new RuntimeException("internal error");
 	}
 
 	private void rotateSingle() {
@@ -148,6 +221,12 @@ public class PuzzlePart {
 	}
 
 	public void matchNeighbours() {
+		for (PuzzlePart part : m_glued) {
+			part.matchNeighboursSingle();
+		}
+	}
+
+	private void matchNeighboursSingle() {
 		for (int side = 0; side < 4; side++) {
 			matchNeighbour(side);
 		}
@@ -165,47 +244,55 @@ public class PuzzlePart {
 			return;
 		}
 
+		if (!updateNear(side, other)) {
+			return;
+		}
+
+		updateGlued(other);
+	}
+
+	private boolean updateNear(int side, PuzzlePart other) {
 		switch (side) {
 
 		case LEFT:
 			if (!isNear(m_location.left, m_location.top,
 					other.m_location.right, other.m_location.top)) {
-				return;
+				return false;
 			}
 			other.setStart(0, 0);
 			other.move(m_location.left - other.m_location.right, m_location.top
 					- other.m_location.top);
-			break;
+			return true;
 		case UP:
 			if (!isNear(m_location.left, m_location.top, other.m_location.left,
 					other.m_location.bottom)) {
-				return;
+				return false;
 			}
 			other.setStart(0, 0);
 			other.move(m_location.left - other.m_location.left, m_location.top
 					- other.m_location.bottom);
-			break;
+			return true;
 		case RIGHT:
 			if (!isNear(m_location.right, m_location.top,
 					other.m_location.left, other.m_location.top)) {
-				return;
+				return false;
 			}
 			other.setStart(0, 0);
 			other.move(m_location.right - other.m_location.left, m_location.top
 					- other.m_location.top);
-			break;
+			return true;
 		case DOWN:
 			if (!isNear(m_location.left, m_location.bottom,
 					other.m_location.left, other.m_location.top)) {
-				return;
+				return false;
 			}
 			other.setStart(0, 0);
 			other.move(m_location.left - other.m_location.left,
 					m_location.bottom - other.m_location.top);
-			break;
+			return true;
 		}
 
-		updateGlued(other);
+		throw new RuntimeException("should not get here");
 	}
 
 	private void updateGlued(PuzzlePart other) {
