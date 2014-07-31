@@ -1,4 +1,4 @@
-package com.example.alon1;
+package com.alon.android.puzzle;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -16,23 +15,46 @@ import android.view.View;
 
 public class PuzzleView extends View implements View.OnTouchListener {
 
+	private Utils m_utils;
 	private LinkedList<PuzzlePart> m_parts;
 	private PuzzlePart m_selectedPart;
 	private boolean m_isMove;
+	private boolean m_isDone;
+	private long m_doneTime;
 	private int m_grace;
+	private PuzzleActivity m_activity;
 
-	public PuzzleView(Context context) {
+	private Bitmap m_original;
+	private Rect m_allClip;
+
+	public PuzzleView(PuzzleActivity context, Utils utils) {
 		super(context);
+		m_utils = utils;
+		m_isDone = false;
 		setBackgroundColor(Color.BLACK);
 		this.setOnTouchListener(this);
+		m_activity = context;
+
+		m_utils.loadSound(R.raw.done);
+		m_utils.loadSound(R.raw.join);
+		m_utils.loadSound(R.raw.pick);
+		m_utils.loadSound(R.raw.release);
+		m_utils.loadSound(R.raw.rotate);
 	}
 
 	public void setImage(Bitmap bitmap, int amount) {
+		m_allClip = new Rect(0, 0, getWidth(), getHeight());
+		m_original = bitmap;
 		m_grace = getHeight() / 50;
 		LinkedList<PuzzlePart> parts = createParts(bitmap, amount);
 		updateNeighbours(parts, amount);
 		shuffleParts(parts);
 		m_parts = parts;
+	}
+
+	@Override
+	public boolean performClick() {
+		return super.performClick();
 	}
 
 	private void updateNeighbours(LinkedList<PuzzlePart> parts, int amount) {
@@ -76,7 +98,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		int partDestinationWidth = getWidth() / amount;
 		int partSourceHeight = bitmap.getHeight() / amount;
 		int partDestinationHeight = getHeight() / amount;
-		int partDestinationAdvance = m_grace * 3;
+		int partDestinationAdvance = m_grace * 2;
+		int partDestinationOffset = 0;
 		int partSequence = 0;
 
 		LinkedList<PuzzlePart> parts = new LinkedList<PuzzlePart>();
@@ -87,17 +110,22 @@ public class PuzzleView extends View implements View.OnTouchListener {
 						* partSourceHeight, (col + 1) * partSourceWidth,
 						(row + 1) * partSourceHeight);
 
-				Rect destination = new Rect(partSequence
-						* partDestinationAdvance, partSequence
-						* partDestinationAdvance, partSequence
-						* partDestinationAdvance + partDestinationWidth,
-						partSequence * partDestinationAdvance
+				int startPointY = partSequence * partDestinationAdvance;
+				int startPointX = startPointY + partDestinationOffset;
+				Rect destination = new Rect(
+						partDestinationOffset + startPointX, startPointY,
+						partDestinationOffset + startPointX
+								+ partDestinationWidth, startPointY
 								+ partDestinationHeight);
 
 				PuzzlePart part = new PuzzlePart(this, bitmap, source,
 						destination);
 				parts.add(part);
 				partSequence++;
+				if (partSequence > 10) {
+					partSequence = 0;
+					partDestinationOffset += partDestinationWidth / 2;
+				}
 			}
 		}
 		return parts;
@@ -111,6 +139,11 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return;
 		}
 
+		if (m_isDone) {
+			canvas.drawBitmap(m_original, null, m_allClip, null);
+			return;
+		}
+
 		Iterator<PuzzlePart> iterator = m_parts.descendingIterator();
 		while (iterator.hasNext()) {
 			PuzzlePart part = iterator.next();
@@ -120,7 +153,15 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
+		view.performClick();
 
+		if (m_isDone) {
+			if (System.currentTimeMillis() - m_doneTime < 3000) {
+				return true;
+			}
+			m_activity.finish();
+			return true;
+		}
 		int eventX = (int) event.getX();
 		int eventY = (int) event.getY();
 
@@ -146,6 +187,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return false;
 		}
 
+		m_utils.playSound(R.raw.pick);
 		moveToTop();
 		m_selectedPart.setStart(eventX, eventY);
 		return true;
@@ -175,10 +217,22 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return false;
 		}
 
-		if (!m_isMove) {
+		if (m_isMove) {
+			m_utils.playSound(R.raw.release);
+		} else {
+			m_utils.playSound(R.raw.rotate);
 			m_selectedPart.rotate();
 		}
-		m_selectedPart.matchNeighbours();
+
+		if (m_selectedPart.matchNeighbours()) {
+			if (m_selectedPart.getGlued().size() == m_parts.size()) {
+				m_utils.playSound(R.raw.done);
+				m_isDone = true;
+				m_doneTime = System.currentTimeMillis();
+			} else {
+				m_utils.playSound(R.raw.join);
+			}
+		}
 		invalidate();
 		m_selectedPart = null;
 		return true;

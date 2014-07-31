@@ -1,4 +1,4 @@
-package com.example.alon1;
+package com.alon.android.puzzle;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -220,35 +220,45 @@ public class PuzzlePart {
 		m_neighbours.add(down);
 	}
 
-	public void matchNeighbours() {
+	public boolean matchNeighbours() {
+		boolean match = false;
 		for (PuzzlePart part : m_glued) {
-			part.matchNeighboursSingle();
+			if (part.matchNeighboursSingle()) {
+				match = true;
+			}
 		}
+
+		return match;
 	}
 
-	private void matchNeighboursSingle() {
+	private boolean matchNeighboursSingle() {
+		boolean match = false;
 		for (int side = 0; side < 4; side++) {
-			matchNeighbour(side);
+			if (matchNeighbour(side)) {
+				match = true;
+			}
 		}
+		return match;
 	}
 
-	private void matchNeighbour(int side) {
+	private boolean matchNeighbour(int side) {
 		PuzzlePart other = m_neighbours.get(side);
 		if (other == null) {
-			return;
+			return false;
 		}
 		if (m_glued.contains(other)) {
-			return;
+			return false;
 		}
 		if (m_rotation != other.m_rotation) {
-			return;
+			return false;
 		}
 
 		if (!updateNear(side, other)) {
-			return;
+			return false;
 		}
 
 		updateGlued(other);
+		return true;
 	}
 
 	private boolean updateNear(int side, PuzzlePart other) {
@@ -296,11 +306,21 @@ public class PuzzlePart {
 	}
 
 	private void updateGlued(PuzzlePart other) {
-		m_glued.add(other);
-		other.m_glued.add(this);
+		HashSet<PuzzlePart> temp = new HashSet<PuzzlePart>();
+		temp.addAll(m_glued);
+		temp.add(other);
+		m_glued = temp;
+
+		temp = new HashSet<PuzzlePart>();
+		temp.addAll(other.m_glued);
+		temp.add(this);
+		other.m_glued = temp;
+
 		Collection<PuzzlePart> all = detectAllGlued();
 		for (PuzzlePart part : all) {
-			part.m_glued.addAll(all);
+			temp = new HashSet<PuzzlePart>();
+			temp.addAll(all);
+			part.m_glued = temp;
 		}
 	}
 
