@@ -6,14 +6,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
 public class PuzzleView extends View implements View.OnTouchListener {
+
+	private static final String SAVED_PARTS = PuzzleView.class.getSimpleName()
+			+ "parts";
 
 	private Utils m_utils;
 	private LinkedList<PuzzlePart> m_parts;
@@ -24,12 +29,17 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private long m_endPuzzleTime;
 	private int m_grace;
 	private PuzzleActivity m_activity;
+	private PartsStatus m_savedStatus;
 
 	private Bitmap m_original;
 	private Rect m_allClip;
 
-	public PuzzleView(PuzzleActivity context, Utils utils) {
+	public PuzzleView(PuzzleActivity context, Utils utils,
+			Bundle savedInstanceState) {
 		super(context);
+		if (savedInstanceState != null) {
+			m_savedStatus = (PartsStatus) savedInstanceState.get(SAVED_PARTS);
+		}
 		m_utils = utils;
 		m_isDone = false;
 		setBackgroundColor(Color.BLACK);
@@ -50,7 +60,16 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		LinkedList<PuzzlePart> parts = createParts(bitmap, amount);
 		updateNeighbours(parts, amount);
 		shuffleParts(parts);
+		restoreParts(parts);
 		m_parts = parts;
+	}
+
+	private void restoreParts(LinkedList<PuzzlePart> parts) {
+		if (m_savedStatus == null) {
+			return;
+		}
+
+		m_savedStatus.restoreParts(parts);
 	}
 
 	@Override
@@ -84,6 +103,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	}
 
 	private void shuffleParts(LinkedList<PuzzlePart> parts) {
+		if (m_savedStatus != null) {
+			return;
+		}
+
 		Collections.shuffle(parts);
 		Random random = new Random();
 		for (PuzzlePart part : parts) {
@@ -95,6 +118,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	}
 
 	private LinkedList<PuzzlePart> createParts(Bitmap bitmap, int amount) {
+
 		int partSourceWidth = bitmap.getWidth() / amount;
 		int partDestinationWidth = getWidth() / amount;
 		int partSourceHeight = bitmap.getHeight() / amount;
@@ -111,25 +135,39 @@ public class PuzzleView extends View implements View.OnTouchListener {
 						* partSourceHeight, (col + 1) * partSourceWidth,
 						(row + 1) * partSourceHeight);
 
-				int startPointY = partSequence * partDestinationAdvance;
-				int startPointX = startPointY + partDestinationOffset;
-				Rect destination = new Rect(
-						partDestinationOffset + startPointX, startPointY,
-						partDestinationOffset + startPointX
-								+ partDestinationWidth, startPointY
-								+ partDestinationHeight);
+				Rect destination = createDestination(partDestinationWidth,
+						partDestinationHeight, partDestinationAdvance,
+						partDestinationOffset, partSequence);
 
 				PuzzlePart part = new PuzzlePart(this, bitmap, source,
-						destination);
+						destination, partSequence);
 				parts.add(part);
 				partSequence++;
-				if (partSequence > 10) {
-					partSequence = 0;
+				if (partSequence % 10 == 0) {
 					partDestinationOffset += partDestinationWidth / 2;
 				}
 			}
 		}
 		return parts;
+	}
+
+	private Rect createDestination(int partDestinationWidth,
+			int partDestinationHeight, int partDestinationAdvance,
+			int partDestinationOffset, int partSequence) {
+
+		if (m_savedStatus == null) {
+
+			int startPointY = (partSequence % 10) * partDestinationAdvance;
+			int startPointX = startPointY + partDestinationOffset;
+			Rect destination = new Rect(partDestinationOffset + startPointX,
+					startPointY, partDestinationOffset + startPointX
+							+ partDestinationWidth, startPointY
+							+ partDestinationHeight);
+			return destination;
+		}
+
+		return m_savedStatus.getPartLocation(partDestinationWidth,
+				partDestinationHeight, partSequence, getWidth(), getHeight());
 	}
 
 	@Override
@@ -256,4 +294,12 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	public int getGrace() {
 		return m_grace;
 	}
+
+	@SuppressLint("UseSparseArrays")
+	public void saveInstanceState(Bundle outState) {
+
+		PartsStatus status = new PartsStatus(m_parts);
+		outState.putSerializable(SAVED_PARTS, status);
+	}
+
 }

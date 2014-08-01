@@ -25,12 +25,18 @@ public class PuzzleActivity extends Activity implements OnGlobalLayoutListener {
 		super.onCreate(savedInstanceState);
 
 		m_utils.setFullScreen(this);
-		m_view = new PuzzleView(this, m_utils);
+		m_view = new PuzzleView(this, m_utils, savedInstanceState);
 		setContentView(m_view);
 		ViewTreeObserver observer = m_view.getViewTreeObserver();
 		if (observer.isAlive()) {
 			observer.addOnGlobalLayoutListener(this);
 		}
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		m_view.saveInstanceState(outState);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override

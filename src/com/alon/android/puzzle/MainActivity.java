@@ -15,11 +15,17 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements
+		OnPreDrawListener {
+
+	private static final String SAVED_URI = MainActivity.class.getSimpleName()
+			+ "uri";
 
 	private static final int SELECT_PHOTO = 100;
 	private static final int TAKE_PHOTO = 101;
@@ -27,6 +33,7 @@ public class MainActivity extends ActionBarActivity {
 	private Utils m_utils;
 	private Uri m_uri;
 	private boolean m_inAction;
+	private boolean m_loadImageRequired;
 	private Uri m_cameraOutputUri;
 
 	public MainActivity() {
@@ -50,15 +57,64 @@ public class MainActivity extends ActionBarActivity {
 			Button camera = (Button) findViewById(R.id.btnCamera);
 			camera.setEnabled(false);
 		}
+
+		m_loadImageRequired = false;
+		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
+		ViewTreeObserver observer = imageView.getViewTreeObserver();
+		observer.addOnPreDrawListener(this);
+	}
+
+	@Override
+	public boolean onPreDraw() {
+		try {
+			loadImageFromUri();
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+		return true;
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+
+		if (m_uri != null) {
+			outState.putString(SAVED_URI, m_uri.toString());
+		}
+
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+
+		super.onRestoreInstanceState(savedInstanceState);
+
+		try {
+			onRestoreInstanceStateWorker(savedInstanceState);
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+	}
+
+	private void onRestoreInstanceStateWorker(Bundle savedInstanceState)
+			throws Exception {
+		String uri = savedInstanceState.getString(SAVED_URI);
+		if (uri != null) {
+			m_uri = Uri.parse(uri);
+			m_loadImageRequired = true;
+		}
 	}
 
 	private void resizePreview() {
 		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
-		int min = Math.min(imageView.getMeasuredHeight(),
-				imageView.getMeasuredWidth());
-		LayoutParams params = imageView.getLayoutParams();
-		params.width = min;
-		imageView.setLayoutParams(params);
+		int height = imageView.getMeasuredHeight();
+		int width = imageView.getMeasuredWidth();
+		int min = Math.min(height, width);
+		if (min > 50) {
+			LayoutParams params = imageView.getLayoutParams();
+			params.width = min;
+			imageView.setLayoutParams(params);
+		}
 	}
 
 	public void getPictureFromGallery(View view) {
@@ -157,7 +213,7 @@ public class MainActivity extends ActionBarActivity {
 				return;
 			}
 			m_uri = intentData.getData();
-			loadImageFromUri();
+			m_loadImageRequired = true;
 			break;
 		case TAKE_PHOTO:
 			if (resultCode != RESULT_OK) {
@@ -165,7 +221,7 @@ public class MainActivity extends ActionBarActivity {
 			}
 			saveToGallery();
 			m_uri = m_cameraOutputUri;
-			loadImageFromUri();
+			m_loadImageRequired = true;
 			break;
 		}
 	}
@@ -177,7 +233,13 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void loadImageFromUri() throws Exception {
+		if (!m_loadImageRequired) {
+			return;
+		}
+		m_loadImageRequired = false;
+
 		resizePreview();
+
 		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
 		Bitmap bitmap = m_utils.decodeSampledBitmapFromUri(m_uri,
 				imageView.getWidth(), imageView.getHeight());

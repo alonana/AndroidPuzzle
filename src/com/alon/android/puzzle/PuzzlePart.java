@@ -26,6 +26,7 @@ public class PuzzlePart {
 	private Rect m_location;
 	private Paint m_paint;
 	private int m_rotation;
+	private int m_sequence;
 	private LinkedList<PuzzlePart> m_neighbours;
 	private HashSet<PuzzlePart> m_glued;
 
@@ -33,9 +34,10 @@ public class PuzzlePart {
 	private Rect m_startDestination;
 
 	public PuzzlePart(PuzzleView puzzleView, Bitmap sourceImage, Rect source,
-			Rect destination) {
+			Rect destination, int partSequence) {
 
 		m_view = puzzleView;
+		m_sequence = partSequence;
 
 		m_bitmap = Bitmap.createBitmap(sourceImage, source.left, source.top,
 				source.width(), source.height());
@@ -362,5 +364,24 @@ public class PuzzlePart {
 
 	public Collection<PuzzlePart> getGlued() {
 		return m_glued;
+	}
+
+	public PartStatus getStatus() {
+		PartStatus status = new PartStatus();
+		status.xPercent = (float) m_location.left / m_view.getWidth();
+		status.yPercent = (float) m_location.top / m_view.getHeight();
+		status.sequence = m_sequence;
+		status.rotation = m_rotation;
+
+		for (PuzzlePart glued : m_glued) {
+			status.glued.add(glued.m_sequence);
+		}
+		return status;
+	}
+
+	public void rotateTo(int rotation) {
+		while (m_rotation != rotation) {
+			rotate();
+		}
 	}
 }
