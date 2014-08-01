@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="gallery">טען תמונה מהגלריה</string>
+    <string name="camera">צלם תמונה במצלמה</string>
+    <string name="start">התחל פאזל</string>
+    <string name="preview">תצוגה מקדימה</string>
+    <string name="pieces">חלקים</string>
+    
+</resources>

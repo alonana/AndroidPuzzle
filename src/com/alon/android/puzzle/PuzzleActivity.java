@@ -35,6 +35,14 @@ public class PuzzleActivity extends Activity implements OnGlobalLayoutListener {
 
 	@Override
 	public void onGlobalLayout() {
+		try {
+			onGlobalLayoutWorker();
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+	}
+
+	private void onGlobalLayoutWorker() throws Exception {
 		Intent intent = getIntent();
 		int sidePieces = intent.getIntExtra(SIDE_PIECES, 2);
 		String uriData = intent.getStringExtra(URI);

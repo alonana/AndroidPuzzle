@@ -140,6 +140,15 @@ public class MainActivity extends ActionBarActivity {
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intentData) {
 
+		try {
+			onActivityResultWorker(requestCode, resultCode, intentData);
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+	}
+
+	private void onActivityResultWorker(int requestCode, int resultCode,
+			Intent intentData) throws Exception {
 		super.onActivityResult(requestCode, resultCode, intentData);
 
 		switch (requestCode) {
@@ -167,7 +176,7 @@ public class MainActivity extends ActionBarActivity {
 		this.sendBroadcast(intent);
 	}
 
-	private void loadImageFromUri() {
+	private void loadImageFromUri() throws Exception {
 		resizePreview();
 		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
 		Bitmap bitmap = m_utils.decodeSampledBitmapFromUri(m_uri,

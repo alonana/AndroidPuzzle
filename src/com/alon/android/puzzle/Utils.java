@@ -1,11 +1,9 @@
 package com.alon.android.puzzle;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -14,9 +12,8 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
-import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 
 @SuppressLint("UseSparseArrays")
@@ -53,7 +50,7 @@ public class Utils {
 	}
 
 	public Bitmap decodeSampledBitmapFromUri(Uri selectedImage, int reqWidth,
-			int reqHeight) {
+			int reqHeight) throws Exception {
 		// First decode with inJustDecodeBounds=true to check dimensions
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
@@ -87,34 +84,25 @@ public class Utils {
 		return inSampleSize;
 	}
 
-	private InputStream getImageStream(Uri selectedImage) {
-		try {
-			InputStream imageStream = m_context.getContentResolver()
-					.openInputStream(selectedImage);
-			return imageStream;
-		} catch (FileNotFoundException e) {
-			Log.e("tag", "failed to open file", e);
-			message("error openning file " + selectedImage);
-			return null;
+	private InputStream getImageStream(Uri selectedImage) throws Exception {
+		if (selectedImage == null) {
+			throw new Exception("image not selected");
 		}
+		InputStream imageStream = m_context.getContentResolver()
+				.openInputStream(selectedImage);
+		return imageStream;
 	}
 
-	@SuppressLint("InlinedApi")
 	public void setFullScreen(Activity activity) {
-		if (Build.VERSION.SDK_INT < 16) {
-			activity.getWindow().setFlags(
-					WindowManager.LayoutParams.FLAG_FULLSCREEN,
-					WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		} else {
-			View decorView = activity.getWindow().getDecorView();
-			// Hide the status bar.
-			int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-			decorView.setSystemUiVisibility(uiOptions);
-			// Remember that you should never show the action bar if the
-			// status bar is hidden, so hide that too if necessary.
-			ActionBar actionBar = activity.getActionBar();
-			actionBar.hide();
-		}
+		activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		activity.getWindow().setFlags(
+				WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+	}
+
+	public void handleError(Exception e) {
+		Log.e("tag", "error in application", e);
+		message("error in application " + e.getMessage());
 
 	}
 

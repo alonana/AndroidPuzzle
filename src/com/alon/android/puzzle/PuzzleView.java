@@ -20,7 +20,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private PuzzlePart m_selectedPart;
 	private boolean m_isMove;
 	private boolean m_isDone;
-	private long m_doneTime;
+	private long m_downTime;
+	private long m_endPuzzleTime;
 	private int m_grace;
 	private PuzzleActivity m_activity;
 
@@ -156,7 +157,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		view.performClick();
 
 		if (m_isDone) {
-			if (System.currentTimeMillis() - m_doneTime < 3000) {
+			if (System.currentTimeMillis() - m_endPuzzleTime < 3000) {
 				return true;
 			}
 			m_activity.finish();
@@ -190,6 +191,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		m_utils.playSound(R.raw.pick);
 		moveToTop();
 		m_selectedPart.setStart(eventX, eventY);
+		m_downTime = System.currentTimeMillis();
 		return true;
 	}
 
@@ -217,6 +219,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return false;
 		}
 
+		if (System.currentTimeMillis() - m_downTime < 200) {
+			m_isMove = false;
+		}
+
 		if (m_isMove) {
 			m_utils.playSound(R.raw.release);
 		} else {
@@ -228,7 +234,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			if (m_selectedPart.getGlued().size() == m_parts.size()) {
 				m_utils.playSound(R.raw.done);
 				m_isDone = true;
-				m_doneTime = System.currentTimeMillis();
+				m_endPuzzleTime = System.currentTimeMillis();
 			} else {
 				m_utils.playSound(R.raw.join);
 			}
