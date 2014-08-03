@@ -19,55 +19,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
+            android:textSize="20sp"
+            android:layout_marginBottom="20dp"
             android:text="@string/score" />
 
         <TextView
             android:id="@+id/txtScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="" />
+            android:textSize="20sp"
+            android:textColor="#1e53ed"
+            android:text="@string/scoreInitial" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnGallery"
+    
+    
+     <Button
+        android:id="@+id/btnNewGame"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="getPictureFromGallery"
-        android:text="@string/gallery" />
-
-    <Button
-        android:id="@+id/btnCamera"
+        android:onClick="newGame"
+        android:text="@string/newGame" />
+     <Button
+        android:id="@+id/btnLeadersBoard"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="getPictureFromCamera"
-        android:text="@string/camera" />
-
-    <ImageView
-        android:id="@+id/imagePreview"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_gravity="center"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_weight="1"
-        android:contentDescription="@string/preview"
-        android:scaleType="fitXY" />
-
-    <Button
-        android:id="@+id/btnPieces"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="setPieces" />
-
-    <Button
-        android:id="@+id/btnStart"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="startPuzzle"
-        android:text="@string/start" />
+        android:onClick="leadersBoard"
+        android:text="@string/leadersBoard" />
+     
 
 </LinearLayout>

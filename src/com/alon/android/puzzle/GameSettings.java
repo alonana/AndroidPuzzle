@@ -15,14 +15,14 @@ public class GameSettings implements Serializable {
 	private static final String SETTING_PIECES = "pieces";
 	private static final String SETTING_SCORE = "score";
 
-	private transient MainActivity m_activity;
+	private transient Activity m_activity;
 
 	private String m_image;
 	private int m_pieces;
 	private int m_score;
 
-	public GameSettings(MainActivity mainActivity) {
-		m_activity = mainActivity;
+	public GameSettings(Activity activity) {
+		m_activity = activity;
 		load();
 	}
 
@@ -57,7 +57,7 @@ public class GameSettings implements Serializable {
 		save();
 	}
 
-	private void load() {
+	public void load() {
 		SharedPreferences preferences = m_activity
 				.getPreferences(Activity.MODE_PRIVATE);
 

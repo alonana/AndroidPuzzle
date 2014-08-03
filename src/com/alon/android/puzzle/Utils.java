@@ -37,7 +37,10 @@ public class Utils {
 	}
 
 	public void playSound(int soundId) {
-		int loadId = m_loadedSounds.get(soundId);
+		Integer loadId = m_loadedSounds.get(soundId);
+		if (loadId == null) {
+			throw new RuntimeException("sound not loaded to util " + soundId);
+		}
 		m_sound.play(loadId, 1, 1, 0, 0, 1);
 	}
 
