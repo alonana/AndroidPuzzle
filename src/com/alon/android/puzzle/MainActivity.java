@@ -19,22 +19,27 @@ import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SeekBar;
+import android.widget.TextView;
+
+import com.alon.android.puzzle.play.PuzzleActivity;
+import com.alon.android.puzzle.play.PuzzleView;
 
 public class MainActivity extends ActionBarActivity implements
 		OnPreDrawListener {
 
-	private static final String SAVED_URI = MainActivity.class.getSimpleName()
-			+ "uri";
+	private static final String SETTINGS = MainActivity.class.getSimpleName()
+			+ "settings";
 
 	private static final int SELECT_PHOTO = 100;
 	private static final int TAKE_PHOTO = 101;
+	private static final int GET_PIECES = 102;
+	private static final int START_PUZZLE = 103;
 
 	private Utils m_utils;
-	private Uri m_uri;
 	private boolean m_inAction;
 	private boolean m_loadImageRequired;
 	private Uri m_cameraOutputUri;
+	private GameSettings m_settings;
 
 	public MainActivity() {
 		m_utils = new Utils(this);
@@ -44,13 +49,18 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		m_utils.setFullScreen(this);
+
+		m_settings = new GameSettings(this);
+		m_utils.setFullScreen();
 		setContentView(R.layout.activity_main);
 
+		setPiecesButtonText();
+		setScoresText();
 		Button button = (Button) findViewById(R.id.btnStart);
 		button.setEnabled(false);
 
 		m_utils.loadSound(R.raw.start);
+		m_utils.loadSound(R.raw.click);
 
 		if (!getPackageManager()
 				.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
@@ -58,10 +68,22 @@ public class MainActivity extends ActionBarActivity implements
 			camera.setEnabled(false);
 		}
 
-		m_loadImageRequired = false;
+		m_loadImageRequired = true;
 		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
 		ViewTreeObserver observer = imageView.getViewTreeObserver();
 		observer.addOnPreDrawListener(this);
+	}
+
+	private void setPiecesButtonText() {
+		Button button = (Button) findViewById(R.id.btnPieces);
+		button.setText(m_settings.getPieces() + " x " + m_settings.getPieces());
+		button.invalidate();
+	}
+
+	private void setScoresText() {
+		TextView text = (TextView) findViewById(R.id.txtScore);
+		text.setText(Integer.toString(m_settings.getScore()));
+		text.invalidate();
 	}
 
 	@Override
@@ -77,9 +99,7 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 
-		if (m_uri != null) {
-			outState.putString(SAVED_URI, m_uri.toString());
-		}
+		outState.putSerializable(SETTINGS, m_settings);
 
 		super.onSaveInstanceState(outState);
 	}
@@ -98,9 +118,10 @@ public class MainActivity extends ActionBarActivity implements
 
 	private void onRestoreInstanceStateWorker(Bundle savedInstanceState)
 			throws Exception {
-		String uri = savedInstanceState.getString(SAVED_URI);
-		if (uri != null) {
-			m_uri = Uri.parse(uri);
+
+		m_settings = (GameSettings) savedInstanceState
+				.getSerializable(SETTINGS);
+		if (m_settings.getImage() != null) {
 			m_loadImageRequired = true;
 		}
 	}
@@ -110,11 +131,13 @@ public class MainActivity extends ActionBarActivity implements
 		int height = imageView.getMeasuredHeight();
 		int width = imageView.getMeasuredWidth();
 		int min = Math.min(height, width);
-		if (min > 50) {
-			LayoutParams params = imageView.getLayoutParams();
-			params.width = min;
-			imageView.setLayoutParams(params);
+		if (min == 0) {
+			return;
 		}
+
+		LayoutParams params = imageView.getLayoutParams();
+		params.width = min;
+		imageView.setLayoutParams(params);
 	}
 
 	public void getPictureFromGallery(View view) {
@@ -141,6 +164,24 @@ public class MainActivity extends ActionBarActivity implements
 		}
 	}
 
+	public void setPieces(View view) {
+		if (m_inAction) {
+			return;
+		}
+		m_inAction = true;
+		try {
+			setPiecesWorker();
+		} finally {
+			m_inAction = false;
+		}
+	}
+
+	private void setPiecesWorker() {
+		m_utils.playSound(R.raw.click);
+		Intent intent = new Intent(this, PiecesActivity.class);
+		startActivityForResult(intent, GET_PIECES);
+	}
+
 	public void startPuzzle(View view) {
 		if (m_inAction) {
 			return;
@@ -154,13 +195,14 @@ public class MainActivity extends ActionBarActivity implements
 	}
 
 	private void getPictureFromGalleryWorker() {
+		m_utils.playSound(R.raw.click);
 		Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
 		photoPickerIntent.setType("image/*");
 		startActivityForResult(photoPickerIntent, SELECT_PHOTO);
 	}
 
 	private void getPictureFromCameraWorker() throws Exception {
-
+		m_utils.playSound(R.raw.click);
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		if (takePictureIntent.resolveActivity(getPackageManager()) == null) {
 			return;
@@ -173,13 +215,10 @@ public class MainActivity extends ActionBarActivity implements
 	private void startPuzzleWorker() {
 		m_utils.playSound(R.raw.start);
 
-		SeekBar seek = (SeekBar) findViewById(R.id.seekBarPieces);
-		int sidePieces = seek.getProgress() + 2;
-
 		Intent intent = new Intent(this, PuzzleActivity.class);
-		intent.putExtra(PuzzleActivity.URI, m_uri.toString());
-		intent.putExtra(PuzzleActivity.SIDE_PIECES, sidePieces);
-		startActivity(intent);
+		intent.putExtra(PuzzleActivity.URI, m_settings.getImage());
+		intent.putExtra(PuzzleActivity.SIDE_PIECES, m_settings.getPieces());
+		startActivityForResult(intent, START_PUZZLE);
 	}
 
 	private void createImageFile() throws Exception {
@@ -207,21 +246,33 @@ public class MainActivity extends ActionBarActivity implements
 			Intent intentData) throws Exception {
 		super.onActivityResult(requestCode, resultCode, intentData);
 
+		if (resultCode != RESULT_OK) {
+			return;
+		}
+
 		switch (requestCode) {
+
 		case SELECT_PHOTO:
-			if (resultCode != RESULT_OK) {
-				return;
-			}
-			m_uri = intentData.getData();
+			m_settings.setImage(intentData.getData());
 			m_loadImageRequired = true;
 			break;
+
 		case TAKE_PHOTO:
-			if (resultCode != RESULT_OK) {
-				return;
-			}
 			saveToGallery();
-			m_uri = m_cameraOutputUri;
+			m_settings.setImage(m_cameraOutputUri);
 			m_loadImageRequired = true;
+			break;
+
+		case GET_PIECES:
+			m_settings.setPieces(intentData.getIntExtra(PiecesActivity.AMOUNT,
+					2));
+			setPiecesButtonText();
+			break;
+
+		case START_PUZZLE:
+			int score = intentData.getIntExtra(PuzzleView.SCORE, 0);
+			m_settings.addScore(score);
+			setScoresText();
 			break;
 		}
 	}
@@ -236,13 +287,17 @@ public class MainActivity extends ActionBarActivity implements
 		if (!m_loadImageRequired) {
 			return;
 		}
+		if (m_settings.getImage() == null) {
+			return;
+		}
 		m_loadImageRequired = false;
 
 		resizePreview();
 
 		ImageView imageView = (ImageView) findViewById(R.id.imagePreview);
-		Bitmap bitmap = m_utils.decodeSampledBitmapFromUri(m_uri,
-				imageView.getWidth(), imageView.getHeight());
+		Bitmap bitmap = m_utils.decodeSampledBitmapFromUri(
+				m_settings.getImageAsUri(), imageView.getWidth(),
+				imageView.getHeight());
 
 		imageView.setImageBitmap(bitmap);
 

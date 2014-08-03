@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.play;
 
 public class PuzzleConnection {
 

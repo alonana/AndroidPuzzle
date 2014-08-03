@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.play;
 
 import java.io.Serializable;
 import java.util.HashMap;

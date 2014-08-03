@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.play;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -222,22 +222,20 @@ public class PuzzlePart {
 		m_neighbours.add(down);
 	}
 
-	public boolean matchNeighbours() {
-		boolean match = false;
+	public int matchNeighbours() {
+		int match = 0;
 		for (PuzzlePart part : m_glued) {
-			if (part.matchNeighboursSingle()) {
-				match = true;
-			}
+			match += part.matchNeighboursSingle();
 		}
 
 		return match;
 	}
 
-	private boolean matchNeighboursSingle() {
-		boolean match = false;
+	private int matchNeighboursSingle() {
+		int match = 0;
 		for (int side = 0; side < 4; side++) {
 			if (matchNeighbour(side)) {
-				match = true;
+				match++;
 			}
 		}
 		return match;
@@ -383,5 +381,9 @@ public class PuzzlePart {
 		while (m_rotation != rotation) {
 			rotate();
 		}
+	}
+
+	public Rect getLocation() {
+		return m_location;
 	}
 }

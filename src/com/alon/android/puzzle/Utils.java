@@ -6,7 +6,6 @@ import java.util.HashMap;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -19,12 +18,12 @@ import android.view.WindowManager;
 @SuppressLint("UseSparseArrays")
 public class Utils {
 
-	private Context m_context;
+	private Activity m_activity;
 	private SoundPool m_sound;
 	private HashMap<Integer, Integer> m_loadedSounds;
 
-	public Utils(Context context) {
-		m_context = context;
+	public Utils(Activity context) {
+		m_activity = context;
 	}
 
 	public void loadSound(int soundId) {
@@ -33,7 +32,7 @@ public class Utils {
 			m_loadedSounds = new HashMap<Integer, Integer>();
 		}
 
-		int loadId = m_sound.load(m_context, soundId, 1);
+		int loadId = m_sound.load(m_activity, soundId, 1);
 		m_loadedSounds.put(soundId, loadId);
 	}
 
@@ -43,7 +42,7 @@ public class Utils {
 	}
 
 	public void message(String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(m_context);
+		AlertDialog.Builder builder = new AlertDialog.Builder(m_activity);
 		builder.setMessage(message);
 		AlertDialog alert = builder.create();
 		alert.show();
@@ -88,14 +87,14 @@ public class Utils {
 		if (selectedImage == null) {
 			throw new Exception("image not selected");
 		}
-		InputStream imageStream = m_context.getContentResolver()
+		InputStream imageStream = m_activity.getContentResolver()
 				.openInputStream(selectedImage);
 		return imageStream;
 	}
 
-	public void setFullScreen(Activity activity) {
-		activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		activity.getWindow().setFlags(
+	public void setFullScreen() {
+		m_activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		m_activity.getWindow().setFlags(
 				WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
@@ -104,6 +103,13 @@ public class Utils {
 		Log.e("tag", "error in application", e);
 		message("error in application " + e.getMessage());
 
+	}
+
+	static public void sleep(long milliseconds) {
+		try {
+			Thread.sleep(milliseconds);
+		} catch (InterruptedException e) {
+		}
 	}
 
 }

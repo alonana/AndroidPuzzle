@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.play;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,8 +17,12 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.alon.android.puzzle.R;
+import com.alon.android.puzzle.Utils;
+
 public class PuzzleView extends View implements View.OnTouchListener {
 
+	public static final String SCORE = "score";
 	private static final String SAVED_PARTS = PuzzleView.class.getSimpleName()
 			+ "parts";
 
@@ -30,6 +36,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private int m_grace;
 	private PuzzleActivity m_activity;
 	private PartsStatus m_savedStatus;
+	private ScoresDraw m_scoresDraw;
 
 	private Bitmap m_original;
 	private Rect m_allClip;
@@ -40,6 +47,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		if (savedInstanceState != null) {
 			m_savedStatus = (PartsStatus) savedInstanceState.get(SAVED_PARTS);
 		}
+		m_scoresDraw = new ScoresDraw(this);
 		m_utils = utils;
 		m_isDone = false;
 		setBackgroundColor(Color.BLACK);
@@ -188,6 +196,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			PuzzlePart part = iterator.next();
 			part.draw(canvas);
 		}
+		m_scoresDraw.draw(canvas);
 	}
 
 	@Override
@@ -198,6 +207,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			if (System.currentTimeMillis() - m_endPuzzleTime < 3000) {
 				return true;
 			}
+
+			Intent result = new Intent();
+			result.putExtra(SCORE, m_scoresDraw.getScoresAndStop());
+			m_activity.setResult(Activity.RESULT_OK, result);
 			m_activity.finish();
 			return true;
 		}
@@ -268,7 +281,9 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			m_selectedPart.rotate();
 		}
 
-		if (m_selectedPart.matchNeighbours()) {
+		int matching = m_selectedPart.matchNeighbours();
+		if (matching > 0) {
+			m_scoresDraw.addScore(matching, m_parts.size(), m_selectedPart);
 			if (m_selectedPart.getGlued().size() == m_parts.size()) {
 				m_utils.playSound(R.raw.done);
 				m_isDone = true;
@@ -302,4 +317,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		outState.putSerializable(SAVED_PARTS, status);
 	}
 
+	public void runOnUiThread(Runnable action) {
+		m_activity.runOnUiThread(action);
+	}
 }

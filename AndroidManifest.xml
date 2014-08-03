@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.alon.android.puzzle"
-    android:versionCode="3"
-    android:versionName="3.0" >
+    android:versionCode="31"
+    android:versionName="3.1" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -29,7 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PuzzleActivity" >
+        <activity android:name="com.alon.android.puzzle.play.PuzzleActivity" >
+        </activity>
+        <activity
+            android:name=".PiecesActivity"
+            android:label="@string/title_activity_pieces" >
         </activity>
     </application>
 

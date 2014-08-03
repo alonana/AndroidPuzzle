@@ -1,4 +1,6 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.play;
+
+import com.alon.android.puzzle.Utils;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -24,7 +26,7 @@ public class PuzzleActivity extends Activity implements OnGlobalLayoutListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		m_utils.setFullScreen(this);
+		m_utils.setFullScreen();
 		m_view = new PuzzleView(this, m_utils, savedInstanceState);
 		setContentView(m_view);
 		ViewTreeObserver observer = m_view.getViewTreeObserver();

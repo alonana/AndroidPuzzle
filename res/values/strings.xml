@@ -6,11 +6,15 @@
     <string name="camera">Take a picture using camera</string>
     <string name="start">Puzzle Me!</string>
     <string name="preview">Puzzle Preview</string>
-    <string name="pieces">Pieces</string>
-    <string name="pieces4">4</string>
-    <string name="pieces9">9</string>
-    <string name="pieces16">16</string>
-    <string name="pieces25">25</string>
-    <string name="pieces36">36</string>
+    <string name="title_activity_pieces">PiecesActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="selectPieces">Select Puzzle Difficulty:</string>
+    <string name="size2">2 x 2</string>
+    <string name="size3">3 x 3</string>
+    <string name="size4">4 x 4</string>
+    <string name="size5">5 x 5</string>
+    <string name="size6">6 x 6</string>
+    <string name="score">Score:</string>
     
 </resources>
