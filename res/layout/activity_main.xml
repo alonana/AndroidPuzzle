@@ -18,35 +18,47 @@
             android:id="@+id/txtLabelScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:textSize="20sp"
             android:layout_marginBottom="20dp"
-            android:text="@string/score" />
+            android:layout_marginRight="10dp"
+            android:text="@string/score"
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/txtScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:text="@string/scoreInitial"
             android:textColor="#1e53ed"
-            android:text="@string/scoreInitial" />
+            android:textSize="20sp" />
     </LinearLayout>
-    
-    
-     <Button
+
+    <Button
         android:id="@+id/btnNewGame"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="newGame"
         android:text="@string/newGame" />
-     <Button
-        android:id="@+id/btnLeadersBoard"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
+
+    <TextView
+        android:id="@+id/textSignDescription"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="leadersBoard"
-        android:text="@string/leadersBoard" />
-     
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/signInDescription"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/sign_in_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/sign_out_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/signOut"
+        android:visibility="gone" />
 
 </LinearLayout>

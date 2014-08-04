@@ -139,6 +139,8 @@ public class NewGameActivity extends ActionBarActivity implements
 		m_inAction = true;
 		try {
 			getPictureFromGalleryWorker();
+		} catch (Exception e) {
+			m_utils.handleError(e);
 		} finally {
 			m_inAction = false;
 		}
@@ -151,6 +153,8 @@ public class NewGameActivity extends ActionBarActivity implements
 		m_inAction = true;
 		try {
 			getPictureFromCameraWorker();
+		} catch (Exception e) {
+			m_utils.handleError(e);
 		} finally {
 			m_inAction = false;
 		}
@@ -219,6 +223,9 @@ public class NewGameActivity extends ActionBarActivity implements
 		String imageFileName = "JPEG_" + timeStamp + "_";
 		File storageDir = Environment
 				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		if (!storageDir.exists()) {
+			storageDir.mkdirs();
+		}
 		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
 		m_cameraOutputUri = Uri.fromFile(file);
 	}

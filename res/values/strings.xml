@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">PuzzleMe</string>
+    <string name="preference_file_key">com.alon.android.puzzle.PREFERENCE_FILE_KEY</string>
     <string name="gallery">Load picture from gallery</string>
     <string name="camera">Take a picture using camera</string>
     <string name="start">Puzzle Me!</string>
@@ -18,5 +19,7 @@
     <string name="score">Score:</string>
     <string name="scoreInitial">000</string>
     <string name="leadersBoard">Leaders Board</string>
-
+    <string name="signInDescription">Sign in for real fun</string>
+    <string name="signOut">Sign Out</string>
+    
 </resources>

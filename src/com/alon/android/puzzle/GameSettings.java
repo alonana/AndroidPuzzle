@@ -58,8 +58,9 @@ public class GameSettings implements Serializable {
 	}
 
 	public void load() {
-		SharedPreferences preferences = m_activity
-				.getPreferences(Activity.MODE_PRIVATE);
+		String key = m_activity.getString(R.string.preference_file_key);
+		SharedPreferences preferences = m_activity.getSharedPreferences(key,
+				Activity.MODE_PRIVATE);
 
 		m_image = preferences.getString(SETTING_IMAGE, null);
 		m_pieces = preferences.getInt(SETTING_PIECES, 2);
@@ -67,8 +68,9 @@ public class GameSettings implements Serializable {
 	}
 
 	private void save() {
-		SharedPreferences preferences = m_activity
-				.getPreferences(Activity.MODE_PRIVATE);
+		String key = m_activity.getString(R.string.preference_file_key);
+		SharedPreferences preferences = m_activity.getSharedPreferences(key,
+				Activity.MODE_PRIVATE);
 		Editor editor = preferences.edit();
 
 		editor.putString(SETTING_IMAGE, m_image);
@@ -77,4 +79,5 @@ public class GameSettings implements Serializable {
 
 		editor.commit();
 	}
+
 }
