@@ -7,53 +7,48 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.alon.android.puzzle.PiecesActivity" >
-
-    <TextView
-        android:id="@+id/txtPieces"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/selectPieces" 
-        android:layout_marginBottom="20dp"/>
+    tools:context="com.alon.android.puzzle.NewGameActivity" >
 
     <Button
-        android:id="@+id/btnSize2"
+        android:id="@+id/btnGallery"
+        android:drawableLeft="@drawable/ic_action_picture"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="setSize2"
-        android:text="@string/size2" />
+        android:text="@string/gallery" />
 
     <Button
-        android:id="@+id/btnSize3"
+        android:id="@+id/btnCamera"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="setSize3"
-        android:text="@string/size3" />
+        android:drawableLeft="@drawable/ic_action_camera"
+        android:text="@string/camera" />
+
+    <ImageView
+        android:id="@+id/imagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:contentDescription="@string/preview"
+        android:scaleType="fitXY" />
 
     <Button
-        android:id="@+id/btnSize4"
+        android:id="@+id/btnPieces"
+        android:drawableLeft="@drawable/ic_action_select_all"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btnStart"
+        android:drawableLeft="@drawable/ic_action_play"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="setSize4"
-        android:text="@string/size4" />
-
-    <Button
-        android:id="@+id/btnSize5"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="setSize5"
-        android:text="@string/size5" />
-
-    <Button
-        android:id="@+id/btnSize6"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="setSize6"
-        android:text="@string/size6" />
+        android:text="@string/start" />
 
 </LinearLayout>

@@ -3,9 +3,9 @@
 
     <string name="app_name">PuzzleMe</string>
     <string name="preference_file_key">com.alon.android.puzzle.PREFERENCE_FILE_KEY</string>
-    <string name="gallery">Load picture from gallery</string>
-    <string name="camera">Take a picture using camera</string>
-    <string name="start">Puzzle Me!</string>
+    <string name="gallery">Load a picture</string>
+    <string name="camera">Take a picture</string>
+    <string name="start">Start!</string>
     <string name="preview">Puzzle Preview</string>
     <string name="newGame">New Game</string>
     <string name="hello_world">Hello world!</string>

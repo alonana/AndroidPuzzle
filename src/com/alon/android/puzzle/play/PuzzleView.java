@@ -7,8 +7,6 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,8 +15,10 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.alon.android.puzzle.FragmentPuzzle;
 import com.alon.android.puzzle.R;
 import com.alon.android.puzzle.Utils;
+import com.google.android.gms.games.Games;
 
 public class PuzzleView extends View implements View.OnTouchListener {
 
@@ -27,32 +27,35 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			+ "parts";
 
 	private Utils m_utils;
+	private FragmentPuzzle m_fragment;
+
 	private LinkedList<PuzzlePart> m_parts;
 	private PuzzlePart m_selectedPart;
 	private boolean m_isMove;
 	private boolean m_isDone;
+	private boolean m_isScoreUpdated;
 	private long m_downTime;
 	private long m_endPuzzleTime;
 	private int m_grace;
-	private PuzzleActivity m_activity;
 	private PartsStatus m_savedStatus;
 	private ScoresDraw m_scoresDraw;
 
 	private Bitmap m_original;
 	private Rect m_allClip;
 
-	public PuzzleView(PuzzleActivity context, Utils utils,
+	public PuzzleView(FragmentPuzzle fragment, Utils utils,
 			Bundle savedInstanceState) {
-		super(context);
+		super(fragment.getMainActivity());
 		if (savedInstanceState != null) {
 			m_savedStatus = (PartsStatus) savedInstanceState.get(SAVED_PARTS);
 		}
 		m_scoresDraw = new ScoresDraw(this);
 		m_utils = utils;
 		m_isDone = false;
+		m_isScoreUpdated = false;
 		setBackgroundColor(Color.BLACK);
 		this.setOnTouchListener(this);
-		m_activity = context;
+		m_fragment = fragment;
 
 		m_utils.loadSound(R.raw.done);
 		m_utils.loadSound(R.raw.join);
@@ -233,14 +236,18 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		if (System.currentTimeMillis() - m_endPuzzleTime < 3000) {
 			return true;
 		}
-		if (m_activity.isFinishing()) {
+
+		if (m_isScoreUpdated) {
 			return true;
 		}
+		m_isScoreUpdated = true;
 
-		Intent result = new Intent();
-		result.putExtra(SCORE, m_scoresDraw.getScoresAndStop());
-		m_activity.setResult(Activity.RESULT_OK, result);
-		m_activity.finish();
+		m_fragment.getGameSettings().addScore(m_scoresDraw.getScoresAndStop());
+
+		String boardId = m_fragment.getString(R.string.leaderboard_id);
+		Games.Leaderboards.submitScore(m_fragment.getMainActivity()
+				.getApiClient(), boardId, 1337);
+		m_fragment.getMainActivity().setFragmentMain();
 		return true;
 	}
 
@@ -330,6 +337,6 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	}
 
 	public void runOnUiThread(Runnable action) {
-		m_activity.runOnUiThread(action);
+		m_fragment.getMainActivity().runOnUiThread(action);
 	}
 }
