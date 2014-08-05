@@ -203,17 +203,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	public boolean onTouch(View view, MotionEvent event) {
 		view.performClick();
 
-		if (m_isDone) {
-			if (System.currentTimeMillis() - m_endPuzzleTime < 3000) {
-				return true;
-			}
-
-			Intent result = new Intent();
-			result.putExtra(SCORE, m_scoresDraw.getScoresAndStop());
-			m_activity.setResult(Activity.RESULT_OK, result);
-			m_activity.finish();
+		if (isGameEnd()) {
 			return true;
 		}
+
 		int eventX = (int) event.getX();
 		int eventY = (int) event.getY();
 
@@ -230,6 +223,25 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 
 		return false;
+	}
+
+	private boolean isGameEnd() {
+		if (!m_isDone) {
+			return false;
+		}
+
+		if (System.currentTimeMillis() - m_endPuzzleTime < 3000) {
+			return true;
+		}
+		if (m_activity.isFinishing()) {
+			return true;
+		}
+
+		Intent result = new Intent();
+		result.putExtra(SCORE, m_scoresDraw.getScoresAndStop());
+		m_activity.setResult(Activity.RESULT_OK, result);
+		m_activity.finish();
+		return true;
 	}
 
 	private boolean handleDown(int eventX, int eventY) {

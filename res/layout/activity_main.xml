@@ -56,9 +56,19 @@
 
     <Button
         android:id="@+id/sign_out_button"
-        android:layout_width="wrap_content"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/signOut"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnLeaders"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="showLeaders"
+        android:text="@string/leadersBoard"
         android:visibility="gone" />
 
 </LinearLayout>

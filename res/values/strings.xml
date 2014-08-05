@@ -20,6 +20,7 @@
     <string name="scoreInitial">000</string>
     <string name="leadersBoard">Leaders Board</string>
     <string name="signInDescription">Sign in for real fun</string>
-    <string name="signOut">Sign Out</string>
+    <string name="signOut">Sign out from Google+</string>
+    <string name="leaderboard_id">CgkI46SnrLAeEAIQAA</string>
     
 </resources>

@@ -23,15 +23,15 @@ public class ScoresDrawSingle {
 
 		m_textPaintOutline = new Paint();
 		m_textPaintOutline.setAntiAlias(true);
-		m_textPaintOutline.setTextSize(16);
+		m_textPaintOutline.setTextSize(20);
 		m_textPaintOutline.setColor(Color.parseColor("#14b7d3"));
 		m_textPaintOutline.setStyle(Paint.Style.STROKE);
 		m_textPaintOutline.setStrokeWidth(4);
 
 		m_textPaint = new Paint();
 		m_textPaint.setAntiAlias(true);
-		m_textPaint.setTextSize(16);
-		m_textPaint.setColor(Color.parseColor("#ba2227"));
+		m_textPaint.setTextSize(20);
+		m_textPaint.setColor(Color.parseColor("#d6272d"));
 		m_textPaint.setStyle(Paint.Style.FILL);
 	}
 

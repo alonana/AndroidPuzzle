@@ -5,12 +5,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 public class MainActivity extends BaseGameActivity implements
 		View.OnClickListener {
 
 	private static final int NEW_GAME = 100;
+	private static final int REQUEST_LEADERBOARD = 101;
 
 	private Utils m_utils;
 	private GameSettings m_settings;
@@ -42,6 +44,13 @@ public class MainActivity extends BaseGameActivity implements
 
 	}
 
+	public void showLeaders(View view) {
+		m_utils.playSound(R.raw.click);
+		String boardId = getString(R.string.leaderboard_id);
+		startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+				getApiClient(), boardId), REQUEST_LEADERBOARD);
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intentData) {
@@ -61,20 +70,31 @@ public class MainActivity extends BaseGameActivity implements
 		case NEW_GAME:
 			m_settings.load();
 			setScoresText();
+			if (isSignedIn()) {
+				String boardId = getString(R.string.leaderboard_id);
+				Games.Leaderboards.submitScore(getApiClient(), boardId,
+						m_settings.getScore());
+			}
 			break;
 		}
 	}
 
 	private void updateButtons(boolean isSignedIn) {
+
+		int requireSign;
+		int preSign;
 		if (isSignedIn) {
-			findViewById(R.id.textSignDescription).setVisibility(View.GONE);
-			findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-			findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+			requireSign = View.VISIBLE;
+			preSign = View.GONE;
 		} else {
-			findViewById(R.id.textSignDescription).setVisibility(View.VISIBLE);
-			findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-			findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+			requireSign = View.GONE;
+			preSign = View.VISIBLE;
 		}
+
+		findViewById(R.id.textSignDescription).setVisibility(preSign);
+		findViewById(R.id.sign_in_button).setVisibility(preSign);
+		findViewById(R.id.sign_out_button).setVisibility(requireSign);
+		findViewById(R.id.btnLeaders).setVisibility(requireSign);
 	}
 
 	@Override

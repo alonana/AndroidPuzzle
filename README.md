@@ -36,3 +36,13 @@ to
 For this project:
 under project, properties, android, library, add: BaseGameUtils
 
+***
+in google play services console add certificate client for both: debug and release keys
+c:\jdk\1.7_64\bin\keytool   -keystore c:\adt-bundle-windows-x86_64-20140702\keystore\googleplay.ks -list
+c:\jdk\1.7_64\bin\keytool   -keystore C:\Users\atamir\.android\debug.keystore  -list  (password for debug is android)
+
+
+**
+Use the target starting with "Google APIs" in avd creation, not the one starting with "Android"
+
+ 
