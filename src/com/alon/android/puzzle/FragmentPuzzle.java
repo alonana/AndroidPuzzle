@@ -16,10 +16,6 @@ public class FragmentPuzzle extends FragmentBase implements
 
 	private PuzzleView m_view;
 
-	public FragmentPuzzle(MainActivity activity) {
-		super(activity);
-	}
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

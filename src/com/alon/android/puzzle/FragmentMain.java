@@ -13,12 +13,9 @@ import com.google.android.gms.games.Games;
 public class FragmentMain extends FragmentBase implements OnClickListener {
 
 	private static final int REQUEST_LEADERBOARD = 101;
+	private static final int REQUEST_ACHIEVEMENTS = 102;
 
 	private View m_topView;
-
-	public FragmentMain(MainActivity activity) {
-		super(activity);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -34,6 +31,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_out_button).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnNewGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnLeaders).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
 
 		updateButtons();
 		return m_topView;
@@ -44,6 +42,9 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		switch (view.getId()) {
 		case R.id.btnLeaders:
 			showLeaders();
+			break;
+		case R.id.btnAchievements:
+			showAchievements();
 			break;
 		case R.id.btnNewGame:
 			getUtils().playSound(R.raw.click);
@@ -63,6 +64,13 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		TextView text = (TextView) m_topView.findViewById(R.id.txtScore);
 		text.setText(Integer.toString(getGameSettings().getScore()));
 		text.invalidate();
+	}
+
+	public void showAchievements() {
+		getUtils().playSound(R.raw.click);
+		Intent intent = Games.Achievements
+				.getAchievementsIntent(getMainActivity().getApiClient());
+		startActivityForResult(intent, REQUEST_ACHIEVEMENTS);
 	}
 
 	public void showLeaders() {
@@ -89,6 +97,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_in_button).setVisibility(preSign);
 		m_topView.findViewById(R.id.sign_out_button).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnLeaders).setVisibility(postSign);
+		m_topView.findViewById(R.id.btnAchievements).setVisibility(postSign);
 	}
 
 }

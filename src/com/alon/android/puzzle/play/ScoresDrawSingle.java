@@ -6,7 +6,7 @@ import android.graphics.Paint;
 
 public class ScoresDrawSingle {
 
-	static private long TTL = 3000;
+	static private long TTL = 5000;
 
 	private String m_score;
 	private long m_startTime;

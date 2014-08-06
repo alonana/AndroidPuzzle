@@ -3,32 +3,49 @@ package com.alon.android.puzzle.play;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.alon.android.puzzle.Utils;
-
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+
+import com.alon.android.puzzle.Utils;
 
 public class ScoresDraw implements Runnable {
 
 	private int m_scores;
+	private String m_scoresText;
 	private LinkedList<ScoresDrawSingle> m_drawings;
 	private boolean m_stop;
 	private Object m_monitor;
 	private PuzzleView m_view;
+	private Paint m_textPaint;
 
 	public ScoresDraw(PuzzleView view) {
-		m_scores = 0;
+
+		setScores(0);
 		m_drawings = new LinkedList<ScoresDrawSingle>();
 		m_stop = false;
 		m_monitor = new Object();
 		m_view = view;
+
+		m_textPaint = new Paint();
+		m_textPaint.setAntiAlias(true);
+		m_textPaint.setTextSize(24);
+		m_textPaint.setColor(Color.parseColor("#f3b329"));
+		m_textPaint.setStyle(Paint.Style.FILL);
+
 		Thread thread = new Thread(this);
 		thread.start();
 	}
 
-	synchronized public void addScore(int matching, int partsAmount,
+	private void setScores(int score) {
+		m_scores = score;
+		m_scoresText = "Score: " + m_scores;
+	}
+
+	synchronized public void addScore(int matchingParts, int totalPartsAmount,
 			PuzzlePart part) {
-		int score = getScore(matching, partsAmount);
-		m_scores += score;
+		int score = matchingParts * totalPartsAmount;
+		setScores(m_scores + score);
 
 		ScoresDrawSingle single = new ScoresDrawSingle(score, part);
 		m_drawings.add(single);
@@ -37,16 +54,13 @@ public class ScoresDraw implements Runnable {
 		}
 	}
 
-	private int getScore(int matching, int partsAmount) {
-
-		return matching * partsAmount;
+	public void draw(Canvas canvas) {
+		drawTotal(canvas);
+		drawScores(canvas);
 	}
 
-	public void draw(Canvas canvas) {
-		if (m_drawings.size() == 0) {
-			return;
-		}
-		drawScores(canvas);
+	private void drawTotal(Canvas canvas) {
+		canvas.drawText(m_scoresText, 20, 20, m_textPaint);
 	}
 
 	synchronized private void drawScores(Canvas canvas) {

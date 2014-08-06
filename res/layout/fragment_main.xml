@@ -64,6 +64,15 @@
         android:visibility="gone" />
 
     <Button
+        android:id="@+id/btnAchievements"
+        android:drawableLeft="@drawable/ic_action_important"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/achievements"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/sign_out_button"
         android:drawableLeft="@drawable/signout"
         style="@style/btnStyleSandrift"

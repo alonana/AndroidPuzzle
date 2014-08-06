@@ -1,15 +1,11 @@
 package com.alon.android.puzzle;
 
-import java.io.Serializable;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 
-public class GameSettings implements Serializable {
-
-	private static final long serialVersionUID = 1835146604040891030L;
+public class GameSettings {
 
 	private static final String SETTING_IMAGE = "image";
 	private static final String SETTING_PIECES = "pieces";
@@ -52,9 +48,10 @@ public class GameSettings implements Serializable {
 		save();
 	}
 
-	public void addScore(int score) {
+	public int addScore(int score) {
 		m_score += score;
 		save();
+		return score;
 	}
 
 	public void load() {

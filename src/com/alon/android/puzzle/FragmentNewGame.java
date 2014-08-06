@@ -29,17 +29,10 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	private static final int SELECT_PHOTO = 100;
 	private static final int TAKE_PHOTO = 101;
 
-	private static final String SETTINGS = FragmentNewGame.class
-			.getSimpleName() + "settings";
-
 	private View m_topView;
 	private boolean m_inAction;
 	private boolean m_loadImageRequired;
 	private Uri m_cameraOutputUri;
-
-	public FragmentNewGame(MainActivity activity) {
-		super(activity);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -132,15 +125,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	@Override
-	public void saveInstanceState(Bundle outState) {
-		outState.putSerializable(SETTINGS, getGameSettings());
-	}
-
-	@Override
 	public void restoreInstanceState(Bundle savedInstanceState) {
-		GameSettings settings = (GameSettings) savedInstanceState
-				.getSerializable(SETTINGS);
-		setGameSettings(settings);
 		if (getGameSettings().getImage() != null) {
 			m_loadImageRequired = true;
 		}

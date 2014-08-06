@@ -10,10 +10,6 @@ public class FragmentPieces extends FragmentBase implements OnClickListener {
 
 	private View m_topView;
 
-	public FragmentPieces(MainActivity activity) {
-		super(activity);
-	}
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

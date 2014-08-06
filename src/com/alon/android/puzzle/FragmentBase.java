@@ -9,11 +9,10 @@ abstract public class FragmentBase extends Fragment {
 	private Utils m_utils;
 	private GameSettings m_settings;
 
-	public FragmentBase(MainActivity activity) {
-		m_mainActivity = activity;
-	}
-
 	public MainActivity getMainActivity() {
+		if (m_mainActivity == null) {
+			m_mainActivity = (MainActivity) getActivity();
+		}
 		return m_mainActivity;
 	}
 
@@ -29,10 +28,6 @@ abstract public class FragmentBase extends Fragment {
 			m_settings = new GameSettings(getActivity());
 		}
 		return m_settings;
-	}
-
-	public void setGameSettings(GameSettings settings) {
-		m_settings = settings;
 	}
 
 	public void saveInstanceState(Bundle outState) {

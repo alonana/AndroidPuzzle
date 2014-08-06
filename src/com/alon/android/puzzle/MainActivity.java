@@ -35,22 +35,22 @@ public class MainActivity extends BaseGameActivity {
 	}
 
 	public void setFragmentMain() {
-		m_fragmentMain = new FragmentMain(this);
+		m_fragmentMain = new FragmentMain();
 		setFragment(m_fragmentMain);
 	}
 
 	public void setFragmentNewGame() {
-		FragmentNewGame fragment = new FragmentNewGame(this);
+		FragmentNewGame fragment = new FragmentNewGame();
 		setFragment(fragment);
 	}
 
 	public void setFragmentPieces() {
-		FragmentPieces fragment = new FragmentPieces(this);
+		FragmentPieces fragment = new FragmentPieces();
 		setFragment(fragment);
 	}
 
 	public void setFragmentPuzzle() {
-		FragmentPuzzle fragment = new FragmentPuzzle(this);
+		FragmentPuzzle fragment = new FragmentPuzzle();
 		setFragment(fragment);
 	}
 
