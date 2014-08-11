@@ -1,6 +1,7 @@
 package com.alon.android.puzzle;
 
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,6 +24,7 @@ public class FragmentCredits extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnCreditsOk).setOnClickListener(this);
 
 		TextView text = (TextView) m_topView.findViewById(R.id.textCredits);
+		text.setMovementMethod(new ScrollingMovementMethod());
 		try {
 			text.setText(getUtils().getResourceText(R.raw.credits));
 		} catch (Exception e) {

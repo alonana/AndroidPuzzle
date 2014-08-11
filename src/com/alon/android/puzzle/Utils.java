@@ -1,13 +1,18 @@
 package com.alon.android.puzzle;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -20,12 +25,12 @@ import android.view.WindowManager;
 @SuppressLint("UseSparseArrays")
 public class Utils {
 
-	private Activity m_activity;
+	private Context m_context;
 	private SoundPool m_sound;
 	private HashMap<Integer, Integer> m_loadedSounds;
 
-	public Utils(Activity context) {
-		m_activity = context;
+	public Utils(Context context) {
+		m_context = context;
 	}
 
 	public void loadSound(int soundId) {
@@ -34,7 +39,7 @@ public class Utils {
 			m_loadedSounds = new HashMap<Integer, Integer>();
 		}
 
-		int loadId = m_sound.load(m_activity, soundId, 1);
+		int loadId = m_sound.load(m_context, soundId, 1);
 		m_loadedSounds.put(soundId, loadId);
 	}
 
@@ -47,7 +52,7 @@ public class Utils {
 	}
 
 	public void message(String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(m_activity);
+		AlertDialog.Builder builder = new AlertDialog.Builder(m_context);
 		builder.setMessage(message);
 		AlertDialog alert = builder.create();
 		alert.show();
@@ -92,14 +97,15 @@ public class Utils {
 		if (selectedImage == null) {
 			throw new Exception("image not selected");
 		}
-		InputStream imageStream = m_activity.getContentResolver()
+		InputStream imageStream = m_context.getContentResolver()
 				.openInputStream(selectedImage);
 		return imageStream;
 	}
 
 	public void setFullScreen() {
-		m_activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		m_activity.getWindow().setFlags(
+		Activity activity = (Activity) m_context;
+		activity.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		activity.getWindow().setFlags(
 				WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
@@ -118,7 +124,7 @@ public class Utils {
 	}
 
 	public String getResourceText(int id) throws Exception {
-		InputStream in = m_activity.getResources().openRawResource(id);
+		InputStream in = m_context.getResources().openRawResource(id);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		copyStream(in, out, false);
 		String data = out.toString();
@@ -126,8 +132,8 @@ public class Utils {
 		return data;
 	}
 
-	public void copyStream(InputStream in, OutputStream out, boolean closeOutput)
-			throws Exception {
+	static public void copyStream(InputStream in, OutputStream out,
+			boolean closeOutput) throws Exception {
 		byte[] buffer = new byte[1024];
 		while (true) {
 			int read = in.read(buffer);
@@ -142,4 +148,42 @@ public class Utils {
 		}
 	}
 
+	public File getStorageFolder() {
+		File folder;
+		if (android.os.Environment.getExternalStorageState().equals(
+				android.os.Environment.MEDIA_MOUNTED)) {
+			folder = new File(
+					android.os.Environment.getExternalStorageDirectory(), this
+							.getClass().getName());
+		} else {
+			folder = m_context.getCacheDir();
+		}
+
+		if (!folder.exists()) {
+			folder.mkdirs();
+		}
+		return folder;
+	}
+
+	public File getStorageSubFolder(String subFolder) {
+		File storage = getStorageFolder();
+		File subFile = new File(storage, subFolder);
+
+		if (!subFile.exists()) {
+			subFile.mkdirs();
+		}
+		return subFile;
+	}
+
+	static public void saveFileFromUrl(String url, File file) throws Exception {
+		URL imageUrl = new URL(url);
+		HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
+		conn.setConnectTimeout(30000);
+		conn.setReadTimeout(30000);
+		conn.setInstanceFollowRedirects(true);
+		InputStream is = conn.getInputStream();
+		OutputStream os = new FileOutputStream(file);
+		Utils.copyStream(is, os, true);
+		conn.disconnect();
+	}
 }

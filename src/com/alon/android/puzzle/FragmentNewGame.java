@@ -67,7 +67,20 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		m_topView.findViewById(R.id.btnPieces).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnDownload).setOnClickListener(this);
 
+		updateButtons();
+
 		return m_topView;
+	}
+
+	public void updateButtons() {
+		int postSign;
+		if (getMainActivity().isSignedIn()) {
+			postSign = View.VISIBLE;
+		} else {
+			postSign = View.GONE;
+		}
+
+		m_topView.findViewById(R.id.btnDownload).setVisibility(postSign);
 	}
 
 	private void setPiecesButtonText() {

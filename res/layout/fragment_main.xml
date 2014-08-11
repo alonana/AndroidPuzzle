@@ -73,6 +73,14 @@
         android:visibility="gone" />
 
     <Button
+        android:id="@+id/btnCredits"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_important"
+        android:text="@string/credits" />
+
+    <Button
         android:id="@+id/sign_out_button"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
@@ -80,13 +88,5 @@
         android:drawableLeft="@drawable/signout"
         android:text="@string/signOut"
         android:visibility="gone" />
-
-    <Button
-        android:id="@+id/btnCredits"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/credits" />
 
 </LinearLayout>
