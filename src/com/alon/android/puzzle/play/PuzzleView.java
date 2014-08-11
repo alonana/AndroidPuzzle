@@ -214,6 +214,9 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		if (m_isDone) {
 			return true;
 		}
+		if (m_parts == null) {
+			return true;
+		}
 
 		int eventX = (int) event.getX();
 		int eventY = (int) event.getY();
@@ -318,8 +321,11 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	}
 
 	private void showDoneDialog() {
-		final Dialog dialog = new Dialog(m_fragment.getActivity());
-		dialog.setContentView(R.layout.end_dialog);
+		if (!m_fragment.isAdded()) {
+			return;
+		}
+		final Dialog dialog = new Dialog(m_fragment.getMainActivity());
+		dialog.setContentView(R.layout.dialog_end);
 		ColorDrawable color = new ColorDrawable(Color.WHITE);
 		color.setAlpha(0x80);
 		dialog.getWindow().setBackgroundDrawable(color);

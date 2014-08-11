@@ -9,6 +9,7 @@ public class GameSettings {
 
 	private static final String SETTING_IMAGE = "image";
 	private static final String SETTING_PIECES = "pieces";
+	private static final String SETTING_EULA = "eula";
 	private static final String SETTING_SCORE = "score";
 
 	private transient Activity m_activity;
@@ -16,6 +17,7 @@ public class GameSettings {
 	private String m_image;
 	private int m_pieces;
 	private int m_score;
+	private boolean m_eulaAccepted;
 
 	public GameSettings(Activity activity) {
 		m_activity = activity;
@@ -54,6 +56,15 @@ public class GameSettings {
 		return score;
 	}
 
+	public boolean isEulaAccepted() {
+		return m_eulaAccepted;
+	}
+
+	public void setEulaAccepted(boolean accepted) {
+		m_eulaAccepted = accepted;
+		save();
+	}
+
 	public void load() {
 		String key = m_activity.getString(R.string.preference_file_key);
 		SharedPreferences preferences = m_activity.getSharedPreferences(key,
@@ -62,6 +73,8 @@ public class GameSettings {
 		m_image = preferences.getString(SETTING_IMAGE, null);
 		m_pieces = preferences.getInt(SETTING_PIECES, 2);
 		m_score = preferences.getInt(SETTING_SCORE, 0);
+		String eulaAccepted = preferences.getString(SETTING_EULA, "false");
+		m_eulaAccepted = Boolean.parseBoolean(eulaAccepted);
 	}
 
 	private void save() {
@@ -71,6 +84,7 @@ public class GameSettings {
 		Editor editor = preferences.edit();
 
 		editor.putString(SETTING_IMAGE, m_image);
+		editor.putString(SETTING_EULA, Boolean.toString(m_eulaAccepted));
 		editor.putInt(SETTING_PIECES, m_pieces);
 		editor.putInt(SETTING_SCORE, m_score);
 

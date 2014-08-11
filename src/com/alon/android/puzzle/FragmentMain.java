@@ -1,7 +1,12 @@
 package com.alon.android.puzzle;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,7 +39,62 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
 
 		updateButtons();
+
+		try {
+			showEula();
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
 		return m_topView;
+	}
+
+	private void showEula() throws Exception {
+		if (getGameSettings().isEulaAccepted()) {
+			return;
+		}
+
+		final Dialog dialog = new Dialog(getMainActivity());
+		dialog.setContentView(R.layout.dialog_eula);
+		dialog.setTitle("end user license agreement");
+		TextView text = (TextView) dialog.findViewById(R.id.textEula);
+		text.setText(getEulaText());
+		text.setMovementMethod(new ScrollingMovementMethod());
+
+		dialog.findViewById(R.id.btnAccept).setOnClickListener(
+				new OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+						getGameSettings().setEulaAccepted(true);
+						dialog.dismiss();
+					}
+				});
+		dialog.findViewById(R.id.btnDecline).setOnClickListener(
+				new OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+						getMainActivity().finish();
+					}
+				});
+
+		dialog.show();
+	}
+
+	private String getEulaText() throws Exception {
+		InputStream in = getMainActivity().getResources().openRawResource(
+				R.raw.eula);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		while (true) {
+			int read = in.read(buffer);
+			if (read == -1) {
+				break;
+			}
+			out.write(buffer, 0, read);
+		}
+		String data = out.toString();
+		return data;
 	}
 
 	@Override
@@ -82,7 +142,6 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	}
 
 	public void updateButtons() {
-
 		int postSign;
 		int preSign;
 		if (getMainActivity().isSignedIn()) {

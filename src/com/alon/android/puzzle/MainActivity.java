@@ -9,6 +9,9 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 
 public class MainActivity extends BaseGameActivity {
 
+	private static final String SAVED_ACTIVITY = MainActivity.class
+			.getSimpleName() + "activity";
+
 	private Utils m_utils;
 	private FragmentMain m_fragmentMain;
 	private FragmentBase m_activeFragment;
@@ -19,9 +22,37 @@ public class MainActivity extends BaseGameActivity {
 		m_utils.setFullScreen();
 
 		super.onCreate(savedInstanceState);
-		setFragmentMain();
+
+		setRequiredFragment(savedInstanceState);
 
 		setContentView(R.layout.activity_main);
+	}
+
+	private void setRequiredFragment(Bundle savedInstanceState) {
+		if (savedInstanceState == null) {
+			setFragmentMain();
+			return;
+		}
+
+		String savedFragment = savedInstanceState.getString(SAVED_ACTIVITY);
+		if (savedFragment == null) {
+			setFragmentMain();
+			return;
+		}
+
+		if (savedFragment.equals(FragmentNewGame.class.getSimpleName())) {
+			setFragmentNewGame();
+			return;
+		}
+		if (savedFragment.equals(FragmentPieces.class.getSimpleName())) {
+			setFragmentPieces();
+			return;
+		}
+		if (savedFragment.equals(FragmentPuzzle.class.getSimpleName())) {
+			setFragmentPuzzle();
+			return;
+		}
+		setFragmentMain();
 	}
 
 	private void setFragment(FragmentBase fragment) {
@@ -58,6 +89,8 @@ public class MainActivity extends BaseGameActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 
 		try {
+			outState.putString(SAVED_ACTIVITY, m_activeFragment.getClass()
+					.getSimpleName());
 			m_activeFragment.saveInstanceState(outState);
 		} catch (Exception e) {
 			m_utils.handleError(e);
