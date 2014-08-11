@@ -65,6 +65,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		m_topView.findViewById(R.id.btnGallery).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnStart).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnPieces).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnDownload).setOnClickListener(this);
 
 		return m_topView;
 	}
@@ -156,6 +157,9 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 			break;
 		case R.id.btnGallery:
 			getPictureFromGallery();
+			break;
+		case R.id.btnDownload:
+			getMainActivity().setFragmentDownload();
 			break;
 		case R.id.btnStart:
 			startPuzzle();

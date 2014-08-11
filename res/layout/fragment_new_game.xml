@@ -25,6 +25,14 @@
         android:drawableLeft="@drawable/ic_action_camera"
         android:text="@string/camera" />
 
+    <Button
+        android:id="@+id/btnDownload"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_picture"
+        android:text="@string/download" />
+
     <ImageView
         android:id="@+id/imagePreview"
         android:layout_width="match_parent"

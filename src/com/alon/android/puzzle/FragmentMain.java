@@ -1,8 +1,5 @@
 package com.alon.android.puzzle;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -37,6 +34,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnNewGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnLeaders).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnCredits).setOnClickListener(this);
 
 		updateButtons();
 
@@ -57,7 +55,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		dialog.setContentView(R.layout.dialog_eula);
 		dialog.setTitle("end user license agreement");
 		TextView text = (TextView) dialog.findViewById(R.id.textEula);
-		text.setText(getEulaText());
+		text.setText(getUtils().getResourceText(R.raw.eula));
 		text.setMovementMethod(new ScrollingMovementMethod());
 
 		dialog.findViewById(R.id.btnAccept).setOnClickListener(
@@ -81,22 +79,6 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		dialog.show();
 	}
 
-	private String getEulaText() throws Exception {
-		InputStream in = getMainActivity().getResources().openRawResource(
-				R.raw.eula);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		while (true) {
-			int read = in.read(buffer);
-			if (read == -1) {
-				break;
-			}
-			out.write(buffer, 0, read);
-		}
-		String data = out.toString();
-		return data;
-	}
-
 	@Override
 	public void onClick(View view) {
 		switch (view.getId()) {
@@ -116,6 +98,9 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		case R.id.sign_out_button:
 			getMainActivity().signOut();
 			updateButtons();
+			break;
+		case R.id.btnCredits:
+			getMainActivity().setFragmentCredits();
 			break;
 		}
 	}

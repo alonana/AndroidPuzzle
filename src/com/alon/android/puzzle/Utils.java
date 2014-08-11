@@ -1,6 +1,8 @@
 package com.alon.android.puzzle;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 
 import android.annotation.SuppressLint;
@@ -112,6 +114,31 @@ public class Utils {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
+		}
+	}
+
+	public String getResourceText(int id) throws Exception {
+		InputStream in = m_activity.getResources().openRawResource(id);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		copyStream(in, out, false);
+		String data = out.toString();
+		out.close();
+		return data;
+	}
+
+	public void copyStream(InputStream in, OutputStream out, boolean closeOutput)
+			throws Exception {
+		byte[] buffer = new byte[1024];
+		while (true) {
+			int read = in.read(buffer);
+			if (read == -1) {
+				break;
+			}
+			out.write(buffer, 0, read);
+		}
+		in.close();
+		if (closeOutput) {
+			out.close();
 		}
 	}
 

@@ -5,8 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-public class FragmentEula extends FragmentBase implements OnClickListener {
+public class FragmentCredits extends FragmentBase implements OnClickListener {
 
 	private View m_topView;
 
@@ -16,29 +17,29 @@ public class FragmentEula extends FragmentBase implements OnClickListener {
 
 		getUtils().loadSound(R.raw.click);
 
-		m_topView = inflater.inflate(R.layout.dialog_eula, container, false);
+		m_topView = inflater.inflate(R.layout.fragment_credits, container,
+				false);
 
-		m_topView.findViewById(R.id.btnAccept).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnDecline).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnCreditsOk).setOnClickListener(this);
 
-		if (getGameSettings().isEulaAccepted()) {
-			getMainActivity().setFragmentMain();
+		TextView text = (TextView) m_topView.findViewById(R.id.textCredits);
+		try {
+			text.setText(getUtils().getResourceText(R.raw.credits));
+		} catch (Exception e) {
+			getUtils().handleError(e);
 		}
-
 		return m_topView;
 	}
 
 	@Override
 	public void onClick(View view) {
+
 		switch (view.getId()) {
-		case R.id.btnAccept:
-			getGameSettings().setEulaAccepted(true);
+		case R.id.btnCreditsOk:
 			getMainActivity().setFragmentMain();
 			break;
-		case R.id.btnDecline:
-			getMainActivity().finish();
-			break;
 		}
+
 	}
 
 }

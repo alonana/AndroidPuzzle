@@ -75,6 +75,11 @@ public class MainActivity extends BaseGameActivity {
 		setFragment(fragment);
 	}
 
+	public void setFragmentDownload() {
+		FragmentDownload fragment = new FragmentDownload();
+		setFragment(fragment);
+	}
+
 	public void setFragmentPieces() {
 		FragmentPieces fragment = new FragmentPieces();
 		setFragment(fragment);
@@ -82,6 +87,11 @@ public class MainActivity extends BaseGameActivity {
 
 	public void setFragmentPuzzle() {
 		FragmentPuzzle fragment = new FragmentPuzzle();
+		setFragment(fragment);
+	}
+
+	public void setFragmentCredits() {
+		FragmentCredits fragment = new FragmentCredits();
 		setFragment(fragment);
 	}
 
@@ -119,6 +129,10 @@ public class MainActivity extends BaseGameActivity {
 			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentNewGame) {
 			setFragmentMain();
+		} else if (m_activeFragment instanceof FragmentCredits) {
+			setFragmentMain();
+		} else if (m_activeFragment instanceof FragmentDownload) {
+			setFragmentNewGame();
 		} else {
 			super.onBackPressed();
 		}
