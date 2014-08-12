@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
 
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.alon.android.puzzle.R;
 
 public class FragmentCredits extends FragmentBase implements OnClickListener {
 
@@ -38,6 +40,7 @@ public class FragmentCredits extends FragmentBase implements OnClickListener {
 
 		switch (view.getId()) {
 		case R.id.btnCreditsOk:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentMain();
 			break;
 		}

@@ -18,9 +18,12 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.alon.android.puzzle.lazylist.ListItemData;
 
 @SuppressLint("UseSparseArrays")
 public class Utils {
@@ -63,8 +66,9 @@ public class Utils {
 		// First decode with inJustDecodeBounds=true to check dimensions
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		BitmapFactory
-				.decodeStream(getImageStream(selectedImage), null, options);
+		InputStream in = getImageStream(selectedImage);
+		BitmapFactory.decodeStream(in, null, options);
+		in.close();
 
 		// Calculate inSampleSize
 		options.inSampleSize = calculateInSampleSize(options, reqWidth,
@@ -72,8 +76,10 @@ public class Utils {
 
 		// Decode bitmap with inSampleSize set
 		options.inJustDecodeBounds = false;
-		return BitmapFactory.decodeStream(getImageStream(selectedImage), null,
-				options);
+		in = getImageStream(selectedImage);
+		Bitmap result = BitmapFactory.decodeStream(in, null, options);
+		in.close();
+		return result;
 	}
 
 	private int calculateInSampleSize(BitmapFactory.Options options,
@@ -111,9 +117,17 @@ public class Utils {
 	}
 
 	public void handleError(Exception e) {
-		Log.e("tag", "error in application", e);
-		message("error in application " + e.getMessage());
+		handleError(e, e.getMessage());
+	}
 
+	public void handleError(Exception e, String message) {
+		if (e == null) {
+			Log.e("PuzzleMe", "error in application: " + message);
+		} else {
+			Log.e("PuzzleMe", "error in application", e);
+		}
+
+		message("error in application " + message);
 	}
 
 	static public void sleep(long milliseconds) {
@@ -185,5 +199,35 @@ public class Utils {
 		OutputStream os = new FileOutputStream(file);
 		Utils.copyStream(is, os, true);
 		conn.disconnect();
+	}
+
+	public void download(ListItemData item,
+			final InterfacePostDownload postDownload) {
+
+		AsyncTask<ListItemData, Integer, Void> task = new AsyncTask<ListItemData, Integer, Void>() {
+
+			@Override
+			protected Void doInBackground(ListItemData... items) {
+				try {
+					downloadInBackground(items[0], postDownload);
+				} catch (Exception e) {
+					handleError(e);
+				}
+				return null;
+			}
+		};
+		task.execute(item);
+	}
+
+	private void downloadInBackground(ListItemData item,
+			InterfacePostDownload postDownload) throws Exception {
+		File storage = getStorageSubFolder("download");
+		File image = new File(storage, item.getName());
+		if (!image.exists()) {
+			Utils.saveFileFromUrl(item.getUrlBig(), image);
+		}
+		GameSettings settings = new GameSettings(m_context);
+		settings.setImage(Uri.fromFile(image));
+		postDownload.postDownload();
 	}
 }

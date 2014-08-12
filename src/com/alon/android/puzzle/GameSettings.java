@@ -1,6 +1,7 @@
 package com.alon.android.puzzle;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
@@ -12,15 +13,15 @@ public class GameSettings {
 	private static final String SETTING_EULA = "eula";
 	private static final String SETTING_SCORE = "score";
 
-	private transient Activity m_activity;
+	private transient Context m_context;
 
 	private String m_image;
 	private int m_pieces;
 	private int m_score;
 	private boolean m_eulaAccepted;
 
-	public GameSettings(Activity activity) {
-		m_activity = activity;
+	public GameSettings(Context activity) {
+		m_context = activity;
 		load();
 	}
 
@@ -66,8 +67,8 @@ public class GameSettings {
 	}
 
 	public void load() {
-		String key = m_activity.getString(R.string.preference_file_key);
-		SharedPreferences preferences = m_activity.getSharedPreferences(key,
+		String key = m_context.getString(R.string.preference_file_key);
+		SharedPreferences preferences = m_context.getSharedPreferences(key,
 				Activity.MODE_PRIVATE);
 
 		m_image = preferences.getString(SETTING_IMAGE, null);
@@ -78,8 +79,8 @@ public class GameSettings {
 	}
 
 	private void save() {
-		String key = m_activity.getString(R.string.preference_file_key);
-		SharedPreferences preferences = m_activity.getSharedPreferences(key,
+		String key = m_context.getString(R.string.preference_file_key);
+		SharedPreferences preferences = m_context.getSharedPreferences(key,
 				Activity.MODE_PRIVATE);
 		Editor editor = preferences.edit();
 

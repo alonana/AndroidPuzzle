@@ -1,5 +1,6 @@
 package com.alon.android.puzzle.play;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.Rect;
+
+import com.alon.android.puzzle.fragments.FragmentNewNetworkGame;
 
 public class PuzzlePart {
 
@@ -107,13 +110,13 @@ public class PuzzlePart {
 		m_startDestination = new Rect(m_location);
 	}
 
-	public void move(int x, int y) {
+	public void move(int x, int y) throws Exception {
 		for (PuzzlePart part : m_glued) {
 			part.moveSingle(x, y);
 		}
 	}
 
-	private void moveSingle(int x, int y) {
+	private void moveSingle(int x, int y) throws Exception {
 		HashSet<PuzzlePart> all = new HashSet<PuzzlePart>();
 		all.add(this);
 
@@ -122,17 +125,50 @@ public class PuzzlePart {
 		m_location = new Rect(m_startDestination.left + xMove,
 				m_startDestination.top + yMove, m_startDestination.right
 						+ xMove, m_startDestination.bottom + yMove);
+
+		sendPartStatus(false);
 	}
 
-	public void rotate() {
+	public void updateFromNetwork(Rect newLocation, PartStatus status,
+			boolean isReliable, ArrayList<PuzzlePart> partsBySequence)
+			throws Exception {
+		m_location = newLocation;
+		if (!isReliable) {
+			return;
+		}
+
+		while (m_rotation != status.rotation) {
+			rotateSingleLocally();
+		}
+
+		if (status.glued.size() != this.m_glued.size()) {
+			HashSet<PuzzlePart> newGlued = new HashSet<PuzzlePart>();
+			for (Integer partSequence : status.glued) {
+				PuzzlePart part = partsBySequence.get(partSequence);
+				newGlued.add(part);
+			}
+			m_glued = newGlued;
+		}
+	}
+
+	private void sendPartStatus(boolean reliable) throws Exception {
+		FragmentNewNetworkGame networkGame = m_view.getNetworkGame();
+		if (networkGame == null) {
+			return;
+		}
+
+		networkGame.sendPartStatus(getStatus(), reliable);
+	}
+
+	public void rotate(boolean localOnly) throws Exception {
 		for (PuzzlePart part : m_glued) {
-			part.rotateSingle();
+			part.rotateSingle(localOnly);
 		}
 
 		updateGluedLocations();
 	}
 
-	private void updateGluedLocations() {
+	private void updateGluedLocations() throws Exception {
 
 		HashSet<PuzzlePart> handled = new HashSet<PuzzlePart>();
 		handled.add(this);
@@ -170,12 +206,14 @@ public class PuzzlePart {
 		}
 	}
 
-	private void updateNeighbourLocation(PuzzlePart neighbour) {
+	private void updateNeighbourLocation(PuzzlePart neighbour) throws Exception {
 		PuzzlePart part = m_neighbours.get(LEFT);
 		if ((part != null) && (part.equals(neighbour))) {
 			neighbour.m_location = new Rect(m_location.left
 					- m_location.width(), m_location.top, m_location.left,
 					m_location.bottom);
+
+			neighbour.sendPartStatus(false);
 			return;
 		}
 
@@ -183,6 +221,8 @@ public class PuzzlePart {
 		if ((part != null) && (part.equals(neighbour))) {
 			neighbour.m_location = new Rect(m_location.left, m_location.top
 					- m_location.height(), m_location.right, m_location.top);
+
+			neighbour.sendPartStatus(false);
 			return;
 		}
 
@@ -190,6 +230,8 @@ public class PuzzlePart {
 		if ((part != null) && (part.equals(neighbour))) {
 			neighbour.m_location = new Rect(m_location.right, m_location.top,
 					m_location.right + m_location.width(), m_location.bottom);
+
+			neighbour.sendPartStatus(false);
 			return;
 		}
 
@@ -197,13 +239,23 @@ public class PuzzlePart {
 		if ((part != null) && (part.equals(neighbour))) {
 			neighbour.m_location = new Rect(m_location.left, m_location.bottom,
 					m_location.right, m_location.bottom + m_location.height());
+
+			neighbour.sendPartStatus(false);
 			return;
 		}
 
 		throw new RuntimeException("internal error");
 	}
 
-	private void rotateSingle() {
+	private void rotateSingle(boolean localOnly) throws Exception {
+
+		rotateSingleLocally();
+		if (!localOnly) {
+			sendPartStatus(true);
+		}
+	}
+
+	private void rotateSingleLocally() {
 		Matrix matrix = new Matrix();
 		matrix.postRotate(90);
 		Bitmap rotated = Bitmap.createBitmap(m_bitmap, 0, 0,
@@ -222,7 +274,7 @@ public class PuzzlePart {
 		m_neighbours.add(down);
 	}
 
-	public int matchNeighbours() {
+	public int matchNeighbours() throws Exception {
 		int match = 0;
 		for (PuzzlePart part : m_glued) {
 			match += part.matchNeighboursSingle();
@@ -231,7 +283,7 @@ public class PuzzlePart {
 		return match;
 	}
 
-	private int matchNeighboursSingle() {
+	private int matchNeighboursSingle() throws Exception {
 		int match = 0;
 		for (int side = 0; side < 4; side++) {
 			if (matchNeighbour(side)) {
@@ -241,7 +293,7 @@ public class PuzzlePart {
 		return match;
 	}
 
-	private boolean matchNeighbour(int side) {
+	private boolean matchNeighbour(int side) throws Exception {
 		PuzzlePart other = m_neighbours.get(side);
 		if (other == null) {
 			return false;
@@ -261,7 +313,7 @@ public class PuzzlePart {
 		return true;
 	}
 
-	private boolean updateNear(int side, PuzzlePart other) {
+	private boolean updateNear(int side, PuzzlePart other) throws Exception {
 		switch (side) {
 
 		case LEFT:
@@ -305,22 +357,20 @@ public class PuzzlePart {
 		throw new RuntimeException("should not get here");
 	}
 
-	private void updateGlued(PuzzlePart other) {
-		HashSet<PuzzlePart> temp = new HashSet<PuzzlePart>();
-		temp.addAll(m_glued);
-		temp.add(other);
-		m_glued = temp;
+	private void updateGlued(PuzzlePart other) throws Exception {
+		HashSet<PuzzlePart> newGlued = new HashSet<PuzzlePart>();
+		newGlued.add(this);
+		newGlued.add(other);
+		newGlued.addAll(this.m_glued);
+		newGlued.addAll(other.m_glued);
 
-		temp = new HashSet<PuzzlePart>();
-		temp.addAll(other.m_glued);
-		temp.add(this);
-		other.m_glued = temp;
+		this.m_glued = newGlued;
+		other.m_glued = newGlued;
 
 		Collection<PuzzlePart> all = detectAllGlued();
 		for (PuzzlePart part : all) {
-			temp = new HashSet<PuzzlePart>();
-			temp.addAll(all);
-			part.m_glued = temp;
+			part.m_glued = newGlued;
+			part.sendPartStatus(true);
 		}
 	}
 
@@ -377,13 +427,14 @@ public class PuzzlePart {
 		return status;
 	}
 
-	public void rotateTo(int rotation) {
+	public void rotateTo(int rotation) throws Exception {
 		while (m_rotation != rotation) {
-			rotate();
+			rotate(true);
 		}
 	}
 
 	public Rect getLocation() {
 		return m_location;
 	}
+
 }

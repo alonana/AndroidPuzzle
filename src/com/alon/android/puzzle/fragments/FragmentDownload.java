@@ -1,9 +1,7 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
 
-import java.io.File;
 import java.util.ArrayList;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,11 +11,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import com.alon.android.puzzle.InterfacePostDownload;
+import com.alon.android.puzzle.R;
 import com.alon.android.puzzle.lazylist.LazyAdapter;
 import com.alon.android.puzzle.lazylist.ListItemData;
 
 public class FragmentDownload extends FragmentBase implements
-		OnItemClickListener {
+		OnItemClickListener, InterfacePostDownload {
 
 	private View m_topView;
 	private ArrayList<ListItemData> m_items;
@@ -95,17 +95,11 @@ public class FragmentDownload extends FragmentBase implements
 
 	private void onItemClickWorker(int position) throws Exception {
 		ListItemData item = m_items.get(position);
-		new DownloadSelectTask(this).execute(item);
+		getUtils().download(item, this);
 	}
 
-	public void downloadInBackground(ListItemData item) throws Exception {
-		File storage = getUtils().getStorageSubFolder("download");
-		File image = new File(storage, item.getName());
-		if (!image.exists()) {
-			Utils.saveFileFromUrl(item.getUrlBig(), image);
-		}
-		getGameSettings().setImage(Uri.fromFile(image));
+	@Override
+	public void postDownload() {
 		getMainActivity().setFragmentNewGame();
 	}
-
 }

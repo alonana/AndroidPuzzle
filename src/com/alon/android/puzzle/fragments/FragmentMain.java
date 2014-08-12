@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -10,6 +10,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.alon.android.puzzle.R;
 import com.google.android.gms.games.Games;
 
 public class FragmentMain extends FragmentBase implements OnClickListener {
@@ -32,6 +33,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_in_button).setOnClickListener(this);
 		m_topView.findViewById(R.id.sign_out_button).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnNewGame).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnNewNetworkGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnLeaders).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnCredits).setOnClickListener(this);
@@ -92,6 +94,10 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentNewGame();
 			break;
+		case R.id.btnNewNetworkGame:
+			getUtils().playSound(R.raw.click);
+			getMainActivity().setFragmentNewNetworkGame();
+			break;
 		case R.id.sign_in_button:
 			getMainActivity().beginUserInitiatedSignIn();
 			break;
@@ -126,6 +132,16 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		startActivityForResult(intent, REQUEST_LEADERBOARD);
 	}
 
+	@Override
+	public void onSignInFailed() {
+		updateButtons();
+	}
+
+	@Override
+	public void onSignInSucceeded() {
+		updateButtons();
+	}
+
 	public void updateButtons() {
 		int postSign;
 		int preSign;
@@ -142,6 +158,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_out_button).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnLeaders).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnAchievements).setVisibility(postSign);
+		m_topView.findViewById(R.id.btnNewNetworkGame).setVisibility(postSign);
 	}
 
 }

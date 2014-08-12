@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -15,12 +15,13 @@ public class FragmentPuzzle extends FragmentBase implements
 		OnGlobalLayoutListener {
 
 	private PuzzleView m_view;
+	private FragmentNewNetworkGame m_network;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		m_view = new PuzzleView(this, getUtils(), savedInstanceState);
+		m_view = new PuzzleView(this, getUtils(), savedInstanceState, m_network);
 
 		ViewTreeObserver observer = m_view.getViewTreeObserver();
 		if (observer.isAlive()) {
@@ -33,7 +34,11 @@ public class FragmentPuzzle extends FragmentBase implements
 	@Override
 	public void saveInstanceState(Bundle outState) {
 		m_view.saveInstanceState(outState);
-		super.saveInstanceState(outState);
+	}
+
+	@Override
+	public void restoreInstanceState(Bundle savedInstanceState) {
+		m_view.restoreInstanceState(savedInstanceState);
 	}
 
 	@Override
@@ -48,10 +53,17 @@ public class FragmentPuzzle extends FragmentBase implements
 	private void onGlobalLayoutWorker() throws Exception {
 		int sidePieces = getGameSettings().getPieces();
 		String uriData = getGameSettings().getImage();
+		if (uriData == null) {
+			return;
+		}
 		Uri uri = Uri.parse(uriData);
 		Bitmap image = getUtils().decodeSampledBitmapFromUri(uri,
 				m_view.getWidth(), m_view.getHeight());
 		m_view.setImage(image, sidePieces);
+	}
+
+	public void setNetwork(FragmentNewNetworkGame networkGame) {
+		m_network = networkGame;
 	}
 
 }

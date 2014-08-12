@@ -1,5 +1,6 @@
 package com.alon.android.puzzle.play;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -21,9 +22,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.alon.android.puzzle.FragmentPuzzle;
 import com.alon.android.puzzle.R;
 import com.alon.android.puzzle.Utils;
+import com.alon.android.puzzle.fragments.FragmentNewNetworkGame;
+import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.games.Games;
 
 public class PuzzleView extends View implements View.OnTouchListener {
@@ -34,14 +36,19 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 	private Utils m_utils;
 	private FragmentPuzzle m_fragment;
+	private FragmentNewNetworkGame m_networkGame;
 
 	private LinkedList<PuzzlePart> m_parts;
+	private ArrayList<PuzzlePart> m_partsBySequence;
+
 	private PuzzlePart m_selectedPart;
 	private boolean m_isMove;
 	private boolean m_isDone;
 	private boolean m_isScoreUpdated;
 	private long m_downTime;
 	private int m_grace;
+	private int m_partWidth;
+	private int m_partHeight;
 	private PartsStatus m_savedStatus;
 	private ScoresDraw m_scoresDraw;
 
@@ -49,11 +56,14 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private Rect m_allClip;
 
 	public PuzzleView(FragmentPuzzle fragment, Utils utils,
-			Bundle savedInstanceState) {
+			Bundle savedInstanceState, FragmentNewNetworkGame network) {
 		super(fragment.getMainActivity());
-		if (savedInstanceState != null) {
-			m_savedStatus = (PartsStatus) savedInstanceState.get(SAVED_PARTS);
+
+		m_networkGame = network;
+		if (m_networkGame != null) {
+			m_networkGame.setView(this);
 		}
+
 		m_scoresDraw = new ScoresDraw(this);
 		m_utils = utils;
 		m_isDone = false;
@@ -69,7 +79,11 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		m_utils.loadSound(R.raw.rotate);
 	}
 
-	public void setImage(Bitmap bitmap, int amount) {
+	public void restoreInstanceState(Bundle savedInstanceState) {
+		m_savedStatus = (PartsStatus) savedInstanceState.get(SAVED_PARTS);
+	}
+
+	public void setImage(Bitmap bitmap, int amount) throws Exception {
 		m_allClip = new Rect(0, 0, getWidth(), getHeight());
 		m_original = bitmap;
 		m_grace = getHeight() / 50;
@@ -80,11 +94,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		m_parts = parts;
 	}
 
-	private void restoreParts(LinkedList<PuzzlePart> parts) {
+	private void restoreParts(LinkedList<PuzzlePart> parts) throws Exception {
 		if (m_savedStatus == null) {
 			return;
 		}
-
 		m_savedStatus.restoreParts(parts);
 	}
 
@@ -118,7 +131,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 	}
 
-	private void shuffleParts(LinkedList<PuzzlePart> parts) {
+	private void shuffleParts(LinkedList<PuzzlePart> parts) throws Exception {
 		if (m_savedStatus != null) {
 			return;
 		}
@@ -128,7 +141,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		for (PuzzlePart part : parts) {
 			int times = random.nextInt(4);
 			for (int rotate = 0; rotate < times; rotate++) {
-				part.rotate();
+				part.rotate(true);
 			}
 		}
 	}
@@ -136,12 +149,13 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private LinkedList<PuzzlePart> createParts(Bitmap bitmap, int amount) {
 
 		int partSourceWidth = bitmap.getWidth() / amount;
-		int partDestinationWidth = getWidth() / amount;
 		int partSourceHeight = bitmap.getHeight() / amount;
-		int partDestinationHeight = getHeight() / amount;
+		m_partWidth = getWidth() / amount;
+		m_partHeight = getHeight() / amount;
 		int partDestinationAdvance = m_grace * 2;
-		int partDestinationOffset = 0;
-		int partSequence = 0;
+		int partXOffset = 0;
+		int sequence = 0;
+		m_partsBySequence = new ArrayList<PuzzlePart>();
 
 		LinkedList<PuzzlePart> parts = new LinkedList<PuzzlePart>();
 		for (int row = 0; row < amount; row++) {
@@ -151,39 +165,38 @@ public class PuzzleView extends View implements View.OnTouchListener {
 						* partSourceHeight, (col + 1) * partSourceWidth,
 						(row + 1) * partSourceHeight);
 
-				Rect destination = createDestination(partDestinationWidth,
-						partDestinationHeight, partDestinationAdvance,
-						partDestinationOffset, partSequence);
+				Rect destination = createLocation(partDestinationAdvance,
+						partXOffset, sequence);
 
 				PuzzlePart part = new PuzzlePart(this, bitmap, source,
-						destination, partSequence);
+						destination, sequence);
+
+				m_partsBySequence.add(sequence, part);
 				parts.add(part);
-				partSequence++;
-				if (partSequence % 10 == 0) {
-					partDestinationOffset += partDestinationWidth / 2;
+				sequence++;
+				if (sequence % 10 == 0) {
+					partXOffset += m_partWidth / 2;
 				}
 			}
 		}
 		return parts;
 	}
 
-	private Rect createDestination(int partDestinationWidth,
-			int partDestinationHeight, int partDestinationAdvance,
-			int partDestinationOffset, int partSequence) {
+	private Rect createLocation(int partsAdvance, int partXOffset,
+			int partSequence) {
 
 		if (m_savedStatus == null) {
 
-			int startPointY = (partSequence % 10) * partDestinationAdvance;
-			int startPointX = startPointY + partDestinationOffset;
-			Rect destination = new Rect(partDestinationOffset + startPointX,
-					startPointY, partDestinationOffset + startPointX
-							+ partDestinationWidth, startPointY
-							+ partDestinationHeight);
+			int startPointY = (partSequence % 10) * partsAdvance;
+			int startPointX = startPointY + partXOffset;
+			Rect destination = new Rect(partXOffset + startPointX, startPointY,
+					partXOffset + startPointX + m_partWidth, startPointY
+							+ m_partHeight);
 			return destination;
 		}
 
-		return m_savedStatus.getPartLocation(partDestinationWidth,
-				partDestinationHeight, partSequence, getWidth(), getHeight());
+		return m_savedStatus.getPartLocation(m_partWidth, m_partHeight,
+				partSequence, getWidth(), getHeight());
 	}
 
 	@Override
@@ -210,6 +223,15 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	@Override
 	public boolean onTouch(View view, MotionEvent event) {
 		view.performClick();
+		try {
+			return onTouchWorker(event);
+		} catch (Exception e) {
+			m_utils.handleError(e);
+			return false;
+		}
+	}
+
+	private boolean onTouchWorker(MotionEvent event) throws Exception {
 
 		if (m_isDone) {
 			return true;
@@ -234,6 +256,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 
 		return false;
+
 	}
 
 	private boolean handleDown(int eventX, int eventY) {
@@ -258,7 +281,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 	}
 
-	private boolean handleMove(int eventX, int eventY) {
+	private boolean handleMove(int eventX, int eventY) throws Exception {
 		if (m_selectedPart == null) {
 			return false;
 		}
@@ -269,7 +292,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		return true;
 	}
 
-	private boolean handleUp() {
+	private boolean handleUp() throws Exception {
 		if (m_selectedPart == null) {
 			return false;
 		}
@@ -282,13 +305,13 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			m_utils.playSound(R.raw.release);
 		} else {
 			m_utils.playSound(R.raw.rotate);
-			m_selectedPart.rotate();
+			m_selectedPart.rotate(false);
 		}
 
 		int matching = m_selectedPart.matchNeighbours();
 		if (matching > 0) {
 			m_scoresDraw.addScore(matching, m_parts.size(), m_selectedPart);
-			if (m_selectedPart.getGlued().size() == m_parts.size()) {
+			if (isAllGlued()) {
 				handleDone();
 			} else {
 				m_utils.playSound(R.raw.join);
@@ -296,6 +319,16 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 		invalidate();
 		m_selectedPart = null;
+		return true;
+	}
+
+	public boolean isAllGlued() {
+		if (m_parts == null) {
+			return false;
+		}
+		if (m_parts.get(0).getGlued().size() != m_parts.size()) {
+			return false;
+		}
 		return true;
 	}
 
@@ -346,6 +379,9 @@ public class PuzzleView extends View implements View.OnTouchListener {
 						m_scoresDraw.getScoresAndStop());
 
 				updateGooglePlay(newScore);
+				if (m_networkGame != null) {
+					m_networkGame.leaveRoom();
+				}
 				dialog.dismiss();
 				m_fragment.getMainActivity().setFragmentMain();
 			}
@@ -355,7 +391,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 					return;
 				}
 
-				String boardId = m_fragment.getString(R.string.leaderboard_id);
+				String boardId = m_fragment.getMainActivity().getString(
+						R.string.leaderboard_id);
 				Games.Leaderboards.submitScore(m_fragment.getMainActivity()
 						.getApiClient(), boardId, newScore);
 
@@ -380,7 +417,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 				default:
 					throw new RuntimeException("invalid size " + size);
 				}
-				String achievement = m_fragment.getString(achievementId);
+				String achievement = m_fragment.getMainActivity().getString(
+						achievementId);
 				Games.Achievements.unlock(m_fragment.getMainActivity()
 						.getApiClient(), achievement);
 			}
@@ -411,4 +449,33 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	public void runOnUiThread(Runnable action) {
 		m_fragment.getMainActivity().runOnUiThread(action);
 	}
+
+	public FragmentNewNetworkGame getNetworkGame() {
+		return m_networkGame;
+	}
+
+	public void updateFromNetwork(PartStatus status, boolean isReliable)
+			throws Exception {
+
+		if (m_parts == null) {
+			return;
+		}
+		PuzzlePart part = m_partsBySequence.get(status.sequence);
+		if (part == null) {
+			throw new Exception("part sequence " + status.sequence
+					+ " not found");
+		}
+
+		Rect newLocation = status.getPartLocation(getWidth(), getHeight(),
+				m_partWidth, m_partHeight);
+		part.updateFromNetwork(newLocation, status, isReliable,
+				m_partsBySequence);
+
+		if (isAllGlued()) {
+			handleDone();
+		}
+
+		invalidate();
+	}
+
 }

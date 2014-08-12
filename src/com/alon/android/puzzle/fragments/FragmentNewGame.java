@@ -1,4 +1,4 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -22,6 +22,8 @@ import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import com.alon.android.puzzle.R;
 
 public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		OnClickListener {
@@ -118,9 +120,14 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 				imageView.getHeight());
 
 		imageView.setImageBitmap(bitmap);
-
 		Button button = (Button) m_topView.findViewById(R.id.btnStart);
-		button.setEnabled(true);
+		if (bitmap == null) {
+			getUtils().message(
+					"Unable to load image " + getGameSettings().getImage());
+			button.setEnabled(false);
+		} else {
+			button.setEnabled(true);
+		}
 	}
 
 	private void resizePreview() {
@@ -221,7 +228,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 
 		getUtils().playSound(R.raw.start);
 
-		getMainActivity().setFragmentPuzzle();
+		getMainActivity().setFragmentPuzzle(null);
 	}
 
 	@Override

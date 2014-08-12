@@ -23,7 +23,7 @@ public class PartsStatus implements Serializable {
 
 	}
 
-	public void restoreParts(LinkedList<PuzzlePart> parts) {
+	public void restoreParts(LinkedList<PuzzlePart> parts) throws Exception {
 
 		for (int partIndex = 0; partIndex < parts.size(); partIndex++) {
 			PuzzlePart part = parts.get(partIndex);
@@ -42,15 +42,22 @@ public class PartsStatus implements Serializable {
 
 	}
 
-	public Rect getPartLocation(int partDestinationWidth,
-			int partDestinationHeight, int partSequence, int totalWidth,
-			int totalHeight) {
+	public Rect getPartLocation(int partWidth, int partHeight,
+			int partSequence, int totalWidth, int totalHeight) {
 
 		PartStatus status = m_statuses.get(partSequence);
-		int startX = (int) (status.xPercent * totalWidth);
-		int startY = (int) (status.yPercent * totalHeight);
-		Rect restored = new Rect(startX, startY, startX + partDestinationWidth,
-				startY + partDestinationHeight);
+		Rect restored = status.getPartLocation(totalWidth, totalHeight,
+				partWidth, partHeight);
 		return restored;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		for (PartStatus status : m_statuses.values()) {
+			result.append(status);
+			result.append('\n');
+		}
+		return result.toString();
 	}
 }

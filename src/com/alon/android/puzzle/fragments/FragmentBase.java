@@ -1,4 +1,8 @@
-package com.alon.android.puzzle;
+package com.alon.android.puzzle.fragments;
+
+import com.alon.android.puzzle.GameSettings;
+import com.alon.android.puzzle.MainActivity;
+import com.alon.android.puzzle.Utils;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -31,11 +35,15 @@ abstract public class FragmentBase extends Fragment {
 	}
 
 	public void saveInstanceState(Bundle outState) {
-
 	}
 
 	public void restoreInstanceState(Bundle savedInstanceState) {
+	}
 
+	public void onSignInFailed() {
+	}
+
+	public void onSignInSucceeded() {
 	}
 
 }
