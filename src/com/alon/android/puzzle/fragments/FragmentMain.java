@@ -24,6 +24,17 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
+		try {
+			return onCreateViewWorker(inflater, container);
+		} catch (Exception e) {
+			getUtils().handleError(e);
+			return null;
+		}
+
+	}
+
+	private View onCreateViewWorker(LayoutInflater inflater, ViewGroup container)
+			throws Exception {
 		getUtils().loadSound(R.raw.click);
 
 		m_topView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -74,7 +85,11 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 					@Override
 					public void onClick(View view) {
-						getMainActivity().finish();
+						try {
+							getMainActivity().finish();
+						} catch (Exception e) {
+							getUtils().handleError(e);
+						}
 					}
 				});
 
@@ -83,6 +98,15 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 	@Override
 	public void onClick(View view) {
+		try {
+			onClickWorker(view);
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
+
+	}
+
+	private void onClickWorker(View view) throws Exception {
 		switch (view.getId()) {
 		case R.id.btnLeaders:
 			showLeaders();
@@ -117,14 +141,14 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		text.invalidate();
 	}
 
-	public void showAchievements() {
+	public void showAchievements() throws Exception {
 		getUtils().playSound(R.raw.click);
 		Intent intent = Games.Achievements
 				.getAchievementsIntent(getMainActivity().getApiClient());
 		startActivityForResult(intent, REQUEST_ACHIEVEMENTS);
 	}
 
-	public void showLeaders() {
+	public void showLeaders() throws Exception {
 		getUtils().playSound(R.raw.click);
 		String boardId = getString(R.string.leaderboard_id);
 		Intent intent = Games.Leaderboards.getLeaderboardIntent(
@@ -134,15 +158,23 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 	@Override
 	public void onSignInFailed() {
-		updateButtons();
+		try {
+			updateButtons();
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
 	}
 
 	@Override
 	public void onSignInSucceeded() {
-		updateButtons();
+		try {
+			updateButtons();
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
 	}
 
-	public void updateButtons() {
+	public void updateButtons() throws Exception {
 		int postSign;
 		int preSign;
 		if (getMainActivity().isSignedIn()) {

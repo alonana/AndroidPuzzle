@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -28,7 +29,7 @@ import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 
-public class FragmentNewNetworkGame extends FragmentBase implements
+public class FragmentNetworkGame extends FragmentBase implements
 		OnClickListener, RoomStatusUpdateListener,
 		RealTimeMessageReceivedListener, RoomUpdateListener,
 		InterfacePostDownload, ReliableMessageSentCallback {
@@ -39,10 +40,14 @@ public class FragmentNewNetworkGame extends FragmentBase implements
 	private Room m_room;
 	private PuzzleView m_puzzleView;
 	private LinkedList<String> m_participants;
+	private ProgressDialog m_progress;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+
+		// ensure activity is set
+		getMainActivity();
 
 		getUtils().loadSound(R.raw.click);
 
@@ -59,9 +64,15 @@ public class FragmentNewNetworkGame extends FragmentBase implements
 		switch (view.getId()) {
 		case R.id.btnQuickGame:
 			getUtils().playSound(R.raw.click);
+			showProgress();
 			initQuickGame();
 			break;
 		}
+	}
+
+	private void showProgress() {
+		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
+				"Game setup in progress", true);
 	}
 
 	public void initQuickGame() {
@@ -154,7 +165,7 @@ public class FragmentNewNetworkGame extends FragmentBase implements
 			getUtils().message("You've got disconnected, leaving game");
 		}
 
-		leaveRoom();
+		leaveRoom(true);
 	}
 
 	private boolean isPuzzleEnd() {
@@ -221,24 +232,35 @@ public class FragmentNewNetworkGame extends FragmentBase implements
 
 	private void handleRoomWaitingResult(int response) {
 		if (response != Activity.RESULT_OK) {
-			leaveRoom();
+			leaveRoom(true);
 			return;
 		}
 
 		startGame();
 	}
 
-	public void leaveRoom() {
+	public void leaveRoom(boolean backToMainInMidGame) {
 		if (m_room == null) {
 			return;
 		}
-		Games.RealTimeMultiplayer.leave(getMainActivity().getApiClient(), this,
-				m_room.getRoomId());
+
+		if (getMainActivity().getApiClient().isConnected()) {
+			Games.RealTimeMultiplayer.leave(getMainActivity().getApiClient(),
+					this, m_room.getRoomId());
+		}
 		m_room = null;
-		getMainActivity().setFragmentMain();
+
+		if (backToMainInMidGame) {
+			if (!isPuzzleEnd()) {
+				// only back to main in case end dialog is not shown
+				getMainActivity().setFragmentMain();
+			}
+		}
 	}
 
 	private void startGame() {
+		m_progress.dismiss();
+		m_progress = null;
 		getGameSettings().setPieces(2);
 		ListItemData data = new ListItemData(
 				"Crow",
@@ -305,4 +327,16 @@ public class FragmentNewNetworkGame extends FragmentBase implements
 		m_puzzleView.updateFromNetwork(status, message.isReliable());
 	}
 
+	@Override
+	public void cleanup() {
+		if (m_progress != null) {
+			m_progress.dismiss();
+			m_progress = null;
+		}
+
+		/*
+		 * Notice: Do not leaveRoom() on cleanup, as we need to keep it for the
+		 * FragmentPuzzle
+		 */
+	}
 }

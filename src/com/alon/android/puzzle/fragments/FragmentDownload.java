@@ -26,6 +26,16 @@ public class FragmentDownload extends FragmentBase implements
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
+		try {
+			return onCreateViewWorker(inflater, container);
+		} catch (Exception e) {
+			getUtils().handleError(e);
+			return null;
+		}
+	}
+
+	private View onCreateViewWorker(LayoutInflater inflater, ViewGroup container)
+			throws Exception {
 		getUtils().loadSound(R.raw.click);
 
 		m_topView = inflater.inflate(R.layout.fragment_download, container,
@@ -33,6 +43,18 @@ public class FragmentDownload extends FragmentBase implements
 
 		m_items = new ArrayList<ListItemData>();
 
+		populateImages();
+
+		ListView list = (ListView) m_topView.findViewById(R.id.listDownload);
+		ListAdapter adapter = new LazyAdapter(getMainActivity(), m_items);
+		list.setAdapter(adapter);
+
+		list.setOnItemClickListener(this);
+
+		return m_topView;
+	}
+
+	private void populateImages() {
 		m_items.add(new ListItemData(
 				"Horse",
 				"http://4.bp.blogspot.com/-EjDAgMQ0TTE/U-hmIC00dnI/AAAAAAAAAuY/mRSvbg4Xb1A/s1600/horse_small.JPG",
@@ -72,14 +94,6 @@ public class FragmentDownload extends FragmentBase implements
 				"Crow",
 				"http://3.bp.blogspot.com/-p8wqKwScJ8c/U-ijgHNKLDI/AAAAAAAAAwU/6aQRacux_Vo/s1600/crow_small.jpg",
 				"http://2.bp.blogspot.com/-Dkml9vahI9s/U-ijisHmDYI/AAAAAAAAAwc/bsJPV2ZEYXU/s1600/crow.jpg"));
-
-		ListView list = (ListView) m_topView.findViewById(R.id.listDownload);
-		ListAdapter adapter = new LazyAdapter(getMainActivity(), m_items);
-		list.setAdapter(adapter);
-
-		list.setOnItemClickListener(this);
-
-		return m_topView;
 	}
 
 	@Override
@@ -99,7 +113,7 @@ public class FragmentDownload extends FragmentBase implements
 	}
 
 	@Override
-	public void postDownload() {
+	public void postDownload() throws Exception {
 		getMainActivity().setFragmentNewGame();
 	}
 }

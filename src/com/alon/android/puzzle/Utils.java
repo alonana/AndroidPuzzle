@@ -101,7 +101,7 @@ public class Utils {
 
 	private InputStream getImageStream(Uri selectedImage) throws Exception {
 		if (selectedImage == null) {
-			throw new Exception("image not selected");
+			throw new PuzzleException("image not selected");
 		}
 		InputStream imageStream = m_context.getContentResolver()
 				.openInputStream(selectedImage);

@@ -22,9 +22,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.R;
 import com.alon.android.puzzle.Utils;
-import com.alon.android.puzzle.fragments.FragmentNewNetworkGame;
+import com.alon.android.puzzle.fragments.FragmentNetworkGame;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.games.Games;
 
@@ -36,7 +37,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 	private Utils m_utils;
 	private FragmentPuzzle m_fragment;
-	private FragmentNewNetworkGame m_networkGame;
+	private FragmentNetworkGame m_networkGame;
 
 	private LinkedList<PuzzlePart> m_parts;
 	private ArrayList<PuzzlePart> m_partsBySequence;
@@ -56,7 +57,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	private Rect m_allClip;
 
 	public PuzzleView(FragmentPuzzle fragment, Utils utils,
-			Bundle savedInstanceState, FragmentNewNetworkGame network) {
+			Bundle savedInstanceState, FragmentNetworkGame network) {
 		super(fragment.getMainActivity());
 
 		m_networkGame = network;
@@ -333,6 +334,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 	}
 
 	private void handleDone() {
+		if (m_isDone) {
+			return;
+		}
+
 		m_utils.playSound(R.raw.done);
 		m_isDone = true;
 
@@ -358,6 +363,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return;
 		}
 		final Dialog dialog = new Dialog(m_fragment.getMainActivity());
+		dialog.setCanceledOnTouchOutside(false);
 		dialog.setContentView(R.layout.dialog_end);
 		ColorDrawable color = new ColorDrawable(Color.WHITE);
 		color.setAlpha(0x80);
@@ -380,7 +386,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 				updateGooglePlay(newScore);
 				if (m_networkGame != null) {
-					m_networkGame.leaveRoom();
+					m_networkGame.leaveRoom(false);
 				}
 				dialog.dismiss();
 				m_fragment.getMainActivity().setFragmentMain();
@@ -450,7 +456,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		m_fragment.getMainActivity().runOnUiThread(action);
 	}
 
-	public FragmentNewNetworkGame getNetworkGame() {
+	public FragmentNetworkGame getNetworkGame() {
 		return m_networkGame;
 	}
 
@@ -462,7 +468,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 		PuzzlePart part = m_partsBySequence.get(status.sequence);
 		if (part == null) {
-			throw new Exception("part sequence " + status.sequence
+			throw new PuzzleException("part sequence " + status.sequence
 					+ " not found");
 		}
 

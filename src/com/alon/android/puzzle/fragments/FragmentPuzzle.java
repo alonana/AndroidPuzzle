@@ -15,7 +15,7 @@ public class FragmentPuzzle extends FragmentBase implements
 		OnGlobalLayoutListener {
 
 	private PuzzleView m_view;
-	private FragmentNewNetworkGame m_network;
+	private FragmentNetworkGame m_network;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,8 +62,14 @@ public class FragmentPuzzle extends FragmentBase implements
 		m_view.setImage(image, sidePieces);
 	}
 
-	public void setNetwork(FragmentNewNetworkGame networkGame) {
+	public void setNetwork(FragmentNetworkGame networkGame) {
 		m_network = networkGame;
 	}
 
+	@Override
+	public void cleanup() {
+		if (m_network != null) {
+			m_network.leaveRoom(false);
+		}
+	}
 }

@@ -1,11 +1,12 @@
 package com.alon.android.puzzle.fragments;
 
-import com.alon.android.puzzle.GameSettings;
-import com.alon.android.puzzle.MainActivity;
-import com.alon.android.puzzle.Utils;
-
 import android.app.Fragment;
 import android.os.Bundle;
+
+import com.alon.android.puzzle.GameSettings;
+import com.alon.android.puzzle.MainActivity;
+import com.alon.android.puzzle.PuzzleException;
+import com.alon.android.puzzle.Utils;
 
 abstract public class FragmentBase extends Fragment {
 
@@ -16,6 +17,9 @@ abstract public class FragmentBase extends Fragment {
 	public MainActivity getMainActivity() {
 		if (m_mainActivity == null) {
 			m_mainActivity = (MainActivity) getActivity();
+			if (m_mainActivity == null) {
+				throw new PuzzleException("activity is null");
+			}
 		}
 		return m_mainActivity;
 	}
@@ -44,6 +48,10 @@ abstract public class FragmentBase extends Fragment {
 	}
 
 	public void onSignInSucceeded() {
+	}
+
+	public void cleanup() {
+
 	}
 
 }

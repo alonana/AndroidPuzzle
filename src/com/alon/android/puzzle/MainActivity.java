@@ -8,8 +8,8 @@ import com.alon.android.puzzle.fragments.FragmentBase;
 import com.alon.android.puzzle.fragments.FragmentCredits;
 import com.alon.android.puzzle.fragments.FragmentDownload;
 import com.alon.android.puzzle.fragments.FragmentMain;
+import com.alon.android.puzzle.fragments.FragmentNetworkGame;
 import com.alon.android.puzzle.fragments.FragmentNewGame;
-import com.alon.android.puzzle.fragments.FragmentNewNetworkGame;
 import com.alon.android.puzzle.fragments.FragmentPieces;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,13 +35,16 @@ public class MainActivity extends BaseGameActivity {
 	}
 
 	private void setFragment(FragmentBase fragment) {
+		if (m_activeFragment != null) {
+			m_activeFragment.cleanup();
+		}
 		m_activeFragment = fragment;
 
 		FragmentManager fragmentManager = getFragmentManager();
 		FragmentTransaction fragmentTransaction = fragmentManager
 				.beginTransaction();
 		fragmentTransaction.replace(R.id.top, fragment);
-		fragmentTransaction.commit();
+		fragmentTransaction.commitAllowingStateLoss();
 	}
 
 	@Override
@@ -81,7 +84,7 @@ public class MainActivity extends BaseGameActivity {
 	}
 
 	public void setFragmentNewNetworkGame() {
-		FragmentNewNetworkGame fragment = new FragmentNewNetworkGame();
+		FragmentNetworkGame fragment = new FragmentNetworkGame();
 		setFragment(fragment);
 	}
 
@@ -95,7 +98,7 @@ public class MainActivity extends BaseGameActivity {
 		setFragment(fragment);
 	}
 
-	public void setFragmentPuzzle(FragmentNewNetworkGame networkGame) {
+	public void setFragmentPuzzle(FragmentNetworkGame networkGame) {
 		FragmentPuzzle fragment = new FragmentPuzzle();
 		fragment.setNetwork(networkGame);
 		setFragment(fragment);
@@ -115,7 +118,7 @@ public class MainActivity extends BaseGameActivity {
 			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentNewGame) {
 			setFragmentMain();
-		} else if (m_activeFragment instanceof FragmentNewNetworkGame) {
+		} else if (m_activeFragment instanceof FragmentNetworkGame) {
 			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentCredits) {
 			setFragmentMain();

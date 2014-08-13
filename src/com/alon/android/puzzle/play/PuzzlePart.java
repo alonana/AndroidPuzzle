@@ -15,7 +15,7 @@ import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.Rect;
 
-import com.alon.android.puzzle.fragments.FragmentNewNetworkGame;
+import com.alon.android.puzzle.fragments.FragmentNetworkGame;
 
 public class PuzzlePart {
 
@@ -152,7 +152,7 @@ public class PuzzlePart {
 	}
 
 	private void sendPartStatus(boolean reliable) throws Exception {
-		FragmentNewNetworkGame networkGame = m_view.getNetworkGame();
+		FragmentNetworkGame networkGame = m_view.getNetworkGame();
 		if (networkGame == null) {
 			return;
 		}
@@ -162,10 +162,20 @@ public class PuzzlePart {
 
 	public void rotate(boolean localOnly) throws Exception {
 		for (PuzzlePart part : m_glued) {
-			part.rotateSingle(localOnly);
+			part.rotateSingleLocally();
 		}
 
 		updateGluedLocations();
+
+		if (!localOnly) {
+			sendGluedStatus();
+		}
+	}
+
+	private void sendGluedStatus() throws Exception {
+		for (PuzzlePart part : m_glued) {
+			part.sendPartStatus(true);
+		}
 	}
 
 	private void updateGluedLocations() throws Exception {
@@ -247,15 +257,8 @@ public class PuzzlePart {
 		throw new RuntimeException("internal error");
 	}
 
-	private void rotateSingle(boolean localOnly) throws Exception {
+	private void rotateSingleLocally() throws Exception {
 
-		rotateSingleLocally();
-		if (!localOnly) {
-			sendPartStatus(true);
-		}
-	}
-
-	private void rotateSingleLocally() {
 		Matrix matrix = new Matrix();
 		matrix.postRotate(90);
 		Bitmap rotated = Bitmap.createBitmap(m_bitmap, 0, 0,

@@ -37,14 +37,20 @@ public class FragmentCredits extends FragmentBase implements OnClickListener {
 
 	@Override
 	public void onClick(View view) {
+		try {
+			onClickWorker(view);
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
+	}
 
+	private void onClickWorker(View view) throws Exception {
 		switch (view.getId()) {
 		case R.id.btnCreditsOk:
 			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentMain();
 			break;
 		}
-
 	}
 
 }
