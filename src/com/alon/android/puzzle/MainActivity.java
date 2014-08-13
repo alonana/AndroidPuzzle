@@ -2,6 +2,7 @@ package com.alon.android.puzzle;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import com.alon.android.puzzle.fragments.FragmentBase;
@@ -74,6 +75,7 @@ public class MainActivity extends BaseGameActivity {
 	}
 
 	public void setFragmentMain() {
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		FragmentMain fragment = new FragmentMain();
 		setFragment(fragment);
 	}
@@ -83,7 +85,9 @@ public class MainActivity extends BaseGameActivity {
 		setFragment(fragment);
 	}
 
-	public void setFragmentNewNetworkGame() {
+	public void setFragmentNetworkGame() {
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
 		FragmentNetworkGame fragment = new FragmentNetworkGame();
 		setFragment(fragment);
 	}
@@ -93,8 +97,9 @@ public class MainActivity extends BaseGameActivity {
 		setFragment(fragment);
 	}
 
-	public void setFragmentPieces() {
+	public void setFragmentPieces(boolean isNetwork) {
 		FragmentPieces fragment = new FragmentPieces();
+		fragment.setNetwork(isNetwork);
 		setFragment(fragment);
 	}
 

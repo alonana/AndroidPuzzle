@@ -120,7 +120,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			break;
 		case R.id.btnNewNetworkGame:
 			getUtils().playSound(R.raw.click);
-			getMainActivity().setFragmentNewNetworkGame();
+			getMainActivity().setFragmentNetworkGame();
 			break;
 		case R.id.sign_in_button:
 			getMainActivity().beginUserInitiatedSignIn();

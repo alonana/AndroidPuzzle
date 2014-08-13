@@ -10,7 +10,11 @@ import com.alon.android.puzzle.R;
 
 public class FragmentPieces extends FragmentBase implements OnClickListener {
 
-	private View m_topView;
+	private boolean m_isNetwork;
+
+	public void setNetwork(boolean isNetwork) {
+		m_isNetwork = isNetwork;
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -18,15 +22,15 @@ public class FragmentPieces extends FragmentBase implements OnClickListener {
 
 		getUtils().loadSound(R.raw.click);
 
-		m_topView = inflater
-				.inflate(R.layout.fragment_pieces, container, false);
+		View topView = inflater.inflate(R.layout.fragment_pieces, container,
+				false);
 
-		m_topView.findViewById(R.id.btnSize2).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnSize3).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnSize4).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnSize5).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnSize6).setOnClickListener(this);
-		return m_topView;
+		topView.findViewById(R.id.btnSize2).setOnClickListener(this);
+		topView.findViewById(R.id.btnSize3).setOnClickListener(this);
+		topView.findViewById(R.id.btnSize4).setOnClickListener(this);
+		topView.findViewById(R.id.btnSize5).setOnClickListener(this);
+		topView.findViewById(R.id.btnSize6).setOnClickListener(this);
+		return topView;
 	}
 
 	@Override
@@ -55,7 +59,11 @@ public class FragmentPieces extends FragmentBase implements OnClickListener {
 	private void setSize(int size) {
 		getUtils().playSound(R.raw.click);
 		getGameSettings().setPieces(size);
-		getMainActivity().setFragmentNewGame();
+		if (m_isNetwork) {
+			getMainActivity().setFragmentNetworkGame();
+		} else {
+			getMainActivity().setFragmentNewGame();
+		}
 	}
 
 }

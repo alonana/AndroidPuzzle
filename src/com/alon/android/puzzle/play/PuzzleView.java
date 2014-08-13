@@ -138,13 +138,23 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		}
 
 		Collections.shuffle(parts);
-		Random random = new Random();
+		int partIndex = 0;
 		for (PuzzlePart part : parts) {
-			int times = random.nextInt(4);
+			int times = getRandomRotation(partIndex);
 			for (int rotate = 0; rotate < times; rotate++) {
 				part.rotate(true);
 			}
+			partIndex++;
 		}
+	}
+
+	private int getRandomRotation(int partIndex) {
+		if (m_networkGame == null) {
+			Random random = new Random();
+			return random.nextInt(4);
+		}
+
+		return m_networkGame.getGameInit().getRotation(partIndex);
 	}
 
 	private LinkedList<PuzzlePart> createParts(Bitmap bitmap, int amount) {

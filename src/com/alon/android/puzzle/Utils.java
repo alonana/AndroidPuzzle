@@ -1,10 +1,14 @@
 package com.alon.android.puzzle;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -20,13 +24,17 @@ import android.media.SoundPool;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import com.alon.android.puzzle.lazylist.ListItemData;
 
 @SuppressLint("UseSparseArrays")
 public class Utils {
+
+	private static final String LOG_TAG = "PuzzleMe";
 
 	private Context m_context;
 	private SoundPool m_sound;
@@ -121,13 +129,20 @@ public class Utils {
 	}
 
 	public void handleError(Exception e, String message) {
-		if (e == null) {
-			Log.e("PuzzleMe", "error in application: " + message);
-		} else {
-			Log.e("PuzzleMe", "error in application", e);
-		}
-
+		logError(e, message);
 		message("error in application " + message);
+	}
+
+	public void logError(Exception e, String message) {
+		if (e == null) {
+			Log.e(LOG_TAG, "error in application: " + message);
+		} else {
+			Log.e(LOG_TAG, "error in application", e);
+		}
+	}
+
+	static public void debug(Object logged) {
+		Log.d(LOG_TAG, logged.toString());
 	}
 
 	static public void sleep(long milliseconds) {
@@ -229,5 +244,35 @@ public class Utils {
 		GameSettings settings = new GameSettings(m_context);
 		settings.setImage(Uri.fromFile(image));
 		postDownload.postDownload();
+	}
+
+	static public byte[] serializeObject(Serializable object) throws Exception {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		ObjectOutputStream output = new ObjectOutputStream(bytes);
+		output.writeObject(object);
+		output.flush();
+
+		byte[] result = bytes.toByteArray();
+
+		output.close();
+		bytes.close();
+
+		return result;
+	}
+
+	static public Object deserializeObject(byte[] data) throws Exception {
+		ByteArrayInputStream bytes = new ByteArrayInputStream(data);
+		ObjectInputStream in = new ObjectInputStream(bytes);
+		Object object = in.readObject();
+		in.close();
+		bytes.close();
+		return object;
+	}
+
+	public void setPiecesButtonText(View topView, int buttonId) {
+		Button button = (Button) topView.findViewById(buttonId);
+		GameSettings settings = new GameSettings(m_context);
+		button.setText(settings.getPieces() + " x " + settings.getPieces());
+		button.invalidate();
 	}
 }

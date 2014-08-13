@@ -1,7 +1,10 @@
 package com.alon.android.puzzle.fragments;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -12,8 +15,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import com.alon.android.puzzle.GameInit;
 import com.alon.android.puzzle.InterfacePostDownload;
+import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.R;
+import com.alon.android.puzzle.Utils;
 import com.alon.android.puzzle.lazylist.ListItemData;
 import com.alon.android.puzzle.play.PartStatus;
 import com.alon.android.puzzle.play.PuzzleView;
@@ -36,11 +42,11 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	private final static int RC_WAITING_ROOM = 10002;
 
-	private View m_topView;
 	private Room m_room;
 	private PuzzleView m_puzzleView;
 	private LinkedList<String> m_participants;
 	private ProgressDialog m_progress;
+	private GameInit m_gameInit;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,11 +57,13 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 		getUtils().loadSound(R.raw.click);
 
-		m_topView = inflater.inflate(R.layout.fragment_new_network_game,
+		View topView = inflater.inflate(R.layout.fragment_network_game,
 				container, false);
 
-		m_topView.findViewById(R.id.btnQuickGame).setOnClickListener(this);
-		return m_topView;
+		getUtils().setPiecesButtonText(topView, R.id.btnPiecesNetwork);
+		topView.findViewById(R.id.btnQuickGame).setOnClickListener(this);
+		topView.findViewById(R.id.btnPiecesNetwork).setOnClickListener(this);
+		return topView;
 	}
 
 	@Override
@@ -63,26 +71,31 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 		switch (view.getId()) {
 		case R.id.btnQuickGame:
-			getUtils().playSound(R.raw.click);
-			showProgress();
 			initQuickGame();
+			break;
+		case R.id.btnPiecesNetwork:
+			getMainActivity().setFragmentPieces(true);
 			break;
 		}
 	}
 
-	private void showProgress() {
+	public void initQuickGame() {
+		getUtils().playSound(R.raw.click);
+
+		m_gameInit = new GameInit(getGameSettings().getPieces());
+
 		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
 				"Game setup in progress", true);
-	}
 
-	public void initQuickGame() {
 		Bundle autoMatch = RoomConfig.createAutoMatchCriteria(1, 1, 0);
 
-		RoomConfig.Builder roomConfigBuilder = RoomConfig.builder(this);
-		roomConfigBuilder.setAutoMatchCriteria(autoMatch);
-		roomConfigBuilder.setRoomStatusUpdateListener(this);
-		roomConfigBuilder.setMessageReceivedListener(this);
-		RoomConfig roomConfig = roomConfigBuilder.build();
+		RoomConfig.Builder builder = RoomConfig.builder(this);
+		builder.setVariant(getGameSettings().getPieces());
+
+		builder.setAutoMatchCriteria(autoMatch);
+		builder.setRoomStatusUpdateListener(this);
+		builder.setMessageReceivedListener(this);
+		RoomConfig roomConfig = builder.build();
 
 		Games.RealTimeMultiplayer.create(getMainActivity().getApiClient(),
 				roomConfig);
@@ -223,6 +236,15 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	@Override
 	public void onActivityResult(int request, int response, Intent data) {
+		try {
+			onActivityResultWorker(request, response, data);
+		} catch (Exception e) {
+			getUtils().handleError(e);
+		}
+	}
+
+	private void onActivityResultWorker(int request, int response, Intent data)
+			throws Exception {
 		if (request == RC_WAITING_ROOM) {
 			handleRoomWaitingResult(response);
 			return;
@@ -230,7 +252,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		super.onActivityResult(request, response, data);
 	}
 
-	private void handleRoomWaitingResult(int response) {
+	private void handleRoomWaitingResult(int response) throws Exception {
 		if (response != Activity.RESULT_OK) {
 			leaveRoom(true);
 			return;
@@ -258,31 +280,87 @@ public class FragmentNetworkGame extends FragmentBase implements
 		}
 	}
 
-	private void startGame() {
-		m_progress.dismiss();
-		m_progress = null;
-		getGameSettings().setPieces(2);
-		ListItemData data = new ListItemData(
-				"Crow",
-				"http://3.bp.blogspot.com/-p8wqKwScJ8c/U-ijgHNKLDI/AAAAAAAAAwU/6aQRacux_Vo/s1600/crow_small.jpg",
-				"http://2.bp.blogspot.com/-Dkml9vahI9s/U-ijisHmDYI/AAAAAAAAAwc/bsJPV2ZEYXU/s1600/crow.jpg");
+	private void startGame() throws Exception {
+
+		loadParticipants();
+
+		if (m_progress != null) {
+			m_progress.setMessage("Creating puzzle seed");
+		}
+		byte[] message = Utils.serializeObject(m_gameInit);
+		sendMessage(true, message);
+
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {
+
+			@Override
+			public void run() {
+				startGameTimeout();
+			}
+		};
+		timer.schedule(task, 60000);
+	}
+
+	protected void startGameTimeout() {
+		if (m_progress == null) {
+			return;
+		}
+		getMainActivity().runOnUiThread(new Runnable() {
+
+			@Override
+			public void run() {
+				m_progress.dismiss();
+				m_progress = null;
+				getUtils().message("Timeout initiating game seed, quitting");
+				getMainActivity().setFragmentMain();
+			}
+		});
+	}
+
+	private void postGameInit(GameInit otherInit) {
+		m_gameInit.join(otherInit);
+
+		if (m_progress != null) {
+			m_progress.setMessage("Loading image");
+		}
+		ArrayList<ListItemData> images = FragmentDownload.getImages();
+		ListItemData data = images.get(m_gameInit.getImageIndex());
 		getUtils().download(data, this);
 	}
 
 	@Override
 	public void postDownload() {
+
+		m_progress.dismiss();
+		m_progress = null;
+
+		getMainActivity().setFragmentPuzzle(this);
+	}
+
+	private void loadParticipants() {
+		if (m_progress != null) {
+			m_progress.setMessage("Loading participants list");
+		}
+
+		String myPlayerId = Games.Players.getCurrentPlayerId(getMainActivity()
+				.getApiClient());
+		String myParticipantId = m_room.getParticipantId(myPlayerId);
+
 		m_participants = new LinkedList<String>();
-		String participantId = Games.Players
-				.getCurrentPlayerId(getMainActivity().getApiClient());
 		for (Participant participant : m_room.getParticipants()) {
 
-			if (participant.getParticipantId().equals(participantId)) {
+			if (participant.getParticipantId().equals(myParticipantId)) {
 				continue;
 			}
 			m_participants.add(participant.getParticipantId());
 		}
 
-		getMainActivity().setFragmentPuzzle(this);
+		if (m_participants.size() == 0) {
+			throw new PuzzleException("no participants");
+		}
+		if (m_participants.size() > 1) {
+			throw new PuzzleException("too many participants");
+		}
 	}
 
 	public void setView(PuzzleView puzzleView) {
@@ -294,6 +372,10 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 		byte[] message = status.toBytes();
 
+		sendMessage(reliable, message);
+	}
+
+	private void sendMessage(boolean reliable, byte[] message) {
 		GoogleApiClient api = getMainActivity().getApiClient();
 		String roomId = m_room.getRoomId();
 
@@ -319,12 +401,28 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	private void onRealTimeMessageReceivedWorker(RealTimeMessage message)
 			throws Exception {
-		if (m_puzzleView == null) {
+
+		byte[] data = message.getMessageData();
+		Object object = Utils.deserializeObject(data);
+
+		if (object.getClass().equals(PartStatus.class)) {
+
+			if (m_puzzleView == null) {
+				return;
+			}
+			PartStatus status = (PartStatus) object;
+			m_puzzleView.updateFromNetwork(status, message.isReliable());
 			return;
 		}
-		byte[] data = message.getMessageData();
-		PartStatus status = PartStatus.fromBytes(data);
-		m_puzzleView.updateFromNetwork(status, message.isReliable());
+
+		if (object.getClass().equals(GameInit.class)) {
+			Utils.debug("game init message arrived");
+			GameInit otherInit = (GameInit) object;
+			postGameInit(otherInit);
+			return;
+		}
+
+		throw new Exception("invalid message " + object.getClass().getName());
 	}
 
 	@Override
@@ -338,5 +436,9 @@ public class FragmentNetworkGame extends FragmentBase implements
 		 * Notice: Do not leaveRoom() on cleanup, as we need to keep it for the
 		 * FragmentPuzzle
 		 */
+	}
+
+	public GameInit getGameInit() {
+		return m_gameInit;
 	}
 }

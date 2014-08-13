@@ -47,7 +47,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 
 		m_topView = inflater.inflate(R.layout.fragment_new_game, container,
 				false);
-		setPiecesButtonText();
+		getUtils().setPiecesButtonText(m_topView, R.id.btnPieces);
 		Button button = (Button) m_topView.findViewById(R.id.btnStart);
 		button.setEnabled(false);
 
@@ -83,13 +83,6 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		}
 
 		m_topView.findViewById(R.id.btnDownload).setVisibility(postSign);
-	}
-
-	private void setPiecesButtonText() {
-		Button button = (Button) m_topView.findViewById(R.id.btnPieces);
-		button.setText(getGameSettings().getPieces() + " x "
-				+ getGameSettings().getPieces());
-		button.invalidate();
 	}
 
 	@Override
@@ -185,7 +178,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 			startPuzzle();
 			break;
 		case R.id.btnPieces:
-			setPieces();
+			getMainActivity().setFragmentPieces(false);
 			break;
 		}
 	}
@@ -218,10 +211,6 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		}
 		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
 		m_cameraOutputUri = Uri.fromFile(file);
-	}
-
-	private void setPieces() {
-		getMainActivity().setFragmentPieces();
 	}
 
 	private void startPuzzle() {

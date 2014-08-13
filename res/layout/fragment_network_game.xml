@@ -10,12 +10,18 @@
     tools:context="com.alon.android.puzzle.NewGameActivity" >
 
     <Button
-        android:id="@+id/btnQuickGame"
-        android:drawableLeft="@drawable/ic_action_play"
+        android:id="@+id/btnPiecesNetwork"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/quickGame" />
+        android:drawableLeft="@drawable/ic_action_select_all" />
 
+    <Button
+        android:id="@+id/btnQuickGame"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_play"
+        android:text="@string/quickGame" />
 
 </LinearLayout>
