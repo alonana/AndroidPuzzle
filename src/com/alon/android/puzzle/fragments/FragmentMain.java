@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.alon.android.puzzle.R;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.plus.PlusOneButton;
 
 public class FragmentMain extends FragmentBase implements OnClickListener {
 
@@ -19,6 +20,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	private static final int REQUEST_ACHIEVEMENTS = 102;
 
 	private View m_topView;
+	private PlusOneButton m_plusOneButton;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,6 +51,9 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnCredits).setOnClickListener(this);
 
+		m_plusOneButton = (PlusOneButton) m_topView
+				.findViewById(R.id.btnGooglePlusOne);
+
 		updateButtons();
 
 		try {
@@ -57,6 +62,14 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			getUtils().handleError(e);
 		}
 		return m_topView;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (m_plusOneButton != null) {
+			// m_plusOneButton.initialize(URL, PLUS_ONE_REQUEST_CODE);
+		}
 	}
 
 	private void showEula() throws Exception {
@@ -194,6 +207,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnLeaders).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnAchievements).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setVisibility(postSign);
+		m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
 	}
 
 }

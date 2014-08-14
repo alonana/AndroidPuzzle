@@ -30,6 +30,16 @@
             android:text="@string/scoreInitial"
             android:textColor="#1e53ed"
             android:textSize="20sp" />
+
+        <com.google.android.gms.plus.PlusOneButton
+            xmlns:plus="http://schemas.android.com/apk/lib/com.google.android.gms.plus"
+            android:id="@+id/btnGooglePlusOne"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:visibility="gone"
+            plus:annotation="inline"
+            plus:size="standard" />
     </LinearLayout>
 
     <Button
@@ -39,7 +49,7 @@
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/ic_action_play"
         android:text="@string/newGame" />
-    
+
     <Button
         android:id="@+id/btnNewNetworkGame"
         style="@style/btnStyleSandrift"
@@ -47,7 +57,7 @@
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/ic_action_play"
         android:text="@string/newNetworkGame" />
-    
+
     <TextView
         android:id="@+id/textSignDescription"
         android:layout_width="wrap_content"
@@ -62,23 +72,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/btnLeaders"
-        style="@style/btnStyleSandrift"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/leadersBoard"
-        android:visibility="gone" />
+        android:orientation="horizontal" >
 
-    <Button
-        android:id="@+id/btnAchievements"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/achievements"
-        android:visibility="gone" />
+        <Button
+            android:id="@+id/btnLeaders"
+            style="@style/btnStyleSandrift"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_action_important"
+            android:text="@string/leadersBoard"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnAchievements"
+            style="@style/btnStyleSandrift"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_action_important"
+            android:text="@string/achievements"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnCredits"

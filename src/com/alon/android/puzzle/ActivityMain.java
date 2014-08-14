@@ -4,6 +4,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.view.View;
 
 import com.alon.android.puzzle.fragments.FragmentBase;
 import com.alon.android.puzzle.fragments.FragmentCredits;
@@ -14,6 +15,7 @@ import com.alon.android.puzzle.fragments.FragmentNewGame;
 import com.alon.android.puzzle.fragments.FragmentPieces;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 public class ActivityMain extends BaseGameActivity {
@@ -169,6 +171,8 @@ public class ActivityMain extends BaseGameActivity {
 
 	@Override
 	public void onSignInSucceeded() {
+		View view = findViewById(R.id.top);
+		Games.setViewForPopups(getApiClient(), view);
 		m_activeFragment.onSignInSucceeded();
 	}
 

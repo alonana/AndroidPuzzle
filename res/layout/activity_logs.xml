@@ -14,15 +14,22 @@
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="0dp"
         android:text="@string/cleanLog" />
+
+    <Button
+        android:id="@+id/btnEmailLog"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp"
+        android:text="@string/emailLog" />
 
     <TextView
         android:id="@+id/textLog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="0dp"
         android:text="@string/logDummy"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
