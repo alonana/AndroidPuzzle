@@ -4,19 +4,19 @@ import android.app.Fragment;
 import android.os.Bundle;
 
 import com.alon.android.puzzle.GameSettings;
-import com.alon.android.puzzle.MainActivity;
+import com.alon.android.puzzle.ActivityMain;
 import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.Utils;
 
 abstract public class FragmentBase extends Fragment {
 
-	private MainActivity m_mainActivity;
+	private ActivityMain m_mainActivity;
 	private Utils m_utils;
 	private GameSettings m_settings;
 
-	public MainActivity getMainActivity() {
+	public ActivityMain getMainActivity() {
 		if (m_mainActivity == null) {
-			m_mainActivity = (MainActivity) getActivity();
+			m_mainActivity = (ActivityMain) getActivity();
 			if (m_mainActivity == null) {
 				throw new PuzzleException("activity is null");
 			}

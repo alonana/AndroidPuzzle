@@ -16,7 +16,9 @@ import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
-public class MainActivity extends BaseGameActivity {
+public class ActivityMain extends BaseGameActivity {
+
+	public static final boolean INTERNAL_LOGS = true;
 
 	private Utils m_utils;
 	private FragmentBase m_activeFragment;
@@ -25,6 +27,8 @@ public class MainActivity extends BaseGameActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		m_utils = new Utils(this);
 		m_utils.setFullScreen();
+
+		m_utils.debug("\n=================\napplication starting\n=================\n");
 
 		super.onCreate(savedInstanceState);
 

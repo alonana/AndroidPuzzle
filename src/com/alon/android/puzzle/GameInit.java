@@ -10,11 +10,17 @@ public class GameInit implements Serializable {
 	private static final long serialVersionUID = 1112501618970698819L;
 
 	transient private boolean m_joined;
+	transient private Utils m_utils;
 
 	private short m_imageIndex;
 	private short[] m_rotation;
 
-	public GameInit(int pieces) {
+	private GameInit() {
+
+	}
+
+	public GameInit(Utils utils, int pieces) {
+		m_utils = utils;
 		Random random = new Random();
 		m_imageIndex = (short) random.nextInt(FragmentDownload.getImages()
 				.size());
@@ -22,25 +28,34 @@ public class GameInit implements Serializable {
 		for (int piece = 0; piece < m_rotation.length; piece++) {
 			m_rotation[piece] = (short) random.nextInt(4);
 		}
-		Utils.debug("init " + this);
+		m_utils.debug("init " + this);
 
 		m_joined = false;
 	}
 
-	public void join(GameInit other) {
+	public GameInit join(GameInit other) {
 
 		if (m_joined) {
 			throw new PuzzleException("join cannot be called more than once");
 		}
+
 		m_joined = true;
-		m_imageIndex = addMod(m_imageIndex, other.m_imageIndex,
+
+		GameInit joined = new GameInit();
+		joined.m_utils = this.m_utils;
+
+		joined.m_imageIndex = addMod(this.m_imageIndex, other.m_imageIndex,
 				FragmentDownload.getImages().size());
 
+		joined.m_rotation = new short[this.m_rotation.length];
 		for (int piece = 0; piece < m_rotation.length; piece++) {
-			m_rotation[piece] = addMod(m_rotation[piece],
+			joined.m_rotation[piece] = addMod(this.m_rotation[piece],
 					other.m_rotation[piece], 4);
 		}
-		Utils.debug("join " + this);
+
+		m_utils.debug("join with " + other);
+		m_utils.debug("join result" + joined);
+		return joined;
 	}
 
 	private short addMod(int i1, int i2, int mod) {

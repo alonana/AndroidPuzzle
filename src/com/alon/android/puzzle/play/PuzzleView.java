@@ -67,6 +67,7 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 		m_scoresDraw = new ScoresDraw(this);
 		m_utils = utils;
+		m_utils.debug("new game starting");
 		m_isDone = false;
 		m_isScoreUpdated = false;
 		setBackgroundColor(Color.BLACK);
@@ -93,6 +94,10 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		shuffleParts(parts);
 		restoreParts(parts);
 		m_parts = parts;
+	}
+
+	public int getTotalPartsAmount() {
+		return m_parts.size();
 	}
 
 	private void restoreParts(LinkedList<PuzzlePart> parts) throws Exception {
@@ -137,7 +142,6 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			return;
 		}
 
-		Collections.shuffle(parts);
 		int partIndex = 0;
 		for (PuzzlePart part : parts) {
 			int times = getRandomRotation(partIndex);
@@ -146,6 +150,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			}
 			partIndex++;
 		}
+
+		Collections.shuffle(parts);
 	}
 
 	private int getRandomRotation(int partIndex) {
@@ -321,7 +327,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 		int matching = m_selectedPart.matchNeighbours();
 		if (matching > 0) {
-			m_scoresDraw.addScore(matching, m_parts.size(), m_selectedPart);
+			m_scoresDraw.addScore(matching, m_selectedPart, false);
+			sendScoreEvent(matching, m_selectedPart);
 			if (isAllGlued()) {
 				handleDone();
 			} else {
@@ -331,6 +338,16 @@ public class PuzzleView extends View implements View.OnTouchListener {
 		invalidate();
 		m_selectedPart = null;
 		return true;
+	}
+
+	private void sendScoreEvent(int matching, PuzzlePart part) throws Exception {
+		if (m_networkGame == null) {
+			return;
+		}
+		ScoreEvent event = new ScoreEvent();
+		event.matchingAmount = matching;
+		event.sequence = part.getSequence();
+		m_networkGame.sendMessage(true, event);
 	}
 
 	public boolean isAllGlued() {
@@ -491,6 +508,21 @@ public class PuzzleView extends View implements View.OnTouchListener {
 			handleDone();
 		}
 
+		invalidate();
+	}
+
+	public void updateScoreFromNetwork(ScoreEvent event) throws Exception {
+
+		if (m_parts == null) {
+			return;
+		}
+		PuzzlePart part = m_partsBySequence.get(event.sequence);
+		if (part == null) {
+			throw new PuzzleException("part sequence " + event.sequence
+					+ " not found");
+		}
+
+		m_scoresDraw.addScore(event.matchingAmount, part, true);
 		invalidate();
 	}
 

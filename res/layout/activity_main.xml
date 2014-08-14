@@ -8,6 +8,6 @@
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
-    tools:context="com.alon.android.puzzle.MainActivity" >
+    tools:context="com.alon.android.puzzle.ActivityMain" >
 
 </LinearLayout>

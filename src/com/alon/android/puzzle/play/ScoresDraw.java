@@ -42,12 +42,15 @@ public class ScoresDraw implements Runnable {
 		m_scoresText = "Score: " + m_scores;
 	}
 
-	synchronized public void addScore(int matchingParts, int totalPartsAmount,
-			PuzzlePart part) {
-		int score = matchingParts * totalPartsAmount;
+	synchronized public void addScore(int matchingParts, PuzzlePart part,
+			boolean isNetwork) {
+		int score = matchingParts * m_view.getTotalPartsAmount();
+		if (isNetwork) {
+			score = (int) (0.75 * score);
+		}
 		setScores(m_scores + score);
 
-		ScoresDrawSingle single = new ScoresDrawSingle(score, part);
+		ScoresDrawSingle single = new ScoresDrawSingle(score, part, isNetwork);
 		m_drawings.add(single);
 		synchronized (m_monitor) {
 			m_monitor.notify();

@@ -3,15 +3,20 @@ package com.alon.android.puzzle;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -139,10 +144,37 @@ public class Utils {
 		} else {
 			Log.e(LOG_TAG, "error in application", e);
 		}
+
+		internalLog(e, message);
 	}
 
-	static public void debug(Object logged) {
-		Log.d(LOG_TAG, logged.toString());
+	public void debug(Object logged) {
+		String message = logged.toString();
+		Log.d(LOG_TAG, message);
+		internalLog(null, message);
+	}
+
+	private void internalLog(Exception e, String message) {
+		if (!ActivityMain.INTERNAL_LOGS) {
+			return;
+		}
+
+		String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+				Locale.US).format(new Date());
+
+		String record = timeStamp + " " + message + "\n";
+
+		try {
+			FileOutputStream out = new FileOutputStream(getLogFile(), true);
+			PrintStream print = new PrintStream(out);
+			print.print(record);
+			if (e != null) {
+				e.printStackTrace(print);
+			}
+			out.close();
+		} catch (Exception e2) {
+			message("write to internal log failed " + e2.getMessage());
+		}
 	}
 
 	static public void sleep(long milliseconds) {
@@ -175,6 +207,15 @@ public class Utils {
 		if (closeOutput) {
 			out.close();
 		}
+	}
+
+	static public String loadFile(File file) throws Exception {
+		FileInputStream in = new FileInputStream(file);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		copyStream(in, out, false);
+		String result = out.toString();
+		out.close();
+		return result;
 	}
 
 	public File getStorageFolder() {
@@ -274,5 +315,11 @@ public class Utils {
 		GameSettings settings = new GameSettings(m_context);
 		button.setText(settings.getPieces() + " x " + settings.getPieces());
 		button.invalidate();
+	}
+
+	public File getLogFile() {
+		File folder = getStorageSubFolder("puzzleMeLog");
+		File log = new File(folder, "app.log");
+		return log;
 	}
 }

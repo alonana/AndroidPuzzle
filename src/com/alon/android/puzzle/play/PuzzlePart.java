@@ -157,7 +157,7 @@ public class PuzzlePart {
 			return;
 		}
 
-		networkGame.sendPartStatus(getStatus(), reliable);
+		networkGame.sendMessage(reliable, getStatus());
 	}
 
 	public void rotate(boolean localOnly) throws Exception {
@@ -440,4 +440,7 @@ public class PuzzlePart {
 		return m_location;
 	}
 
+	public int getSequence() {
+		return m_sequence;
+	}
 }

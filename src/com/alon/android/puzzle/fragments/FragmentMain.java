@@ -109,9 +109,11 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	private void onClickWorker(View view) throws Exception {
 		switch (view.getId()) {
 		case R.id.btnLeaders:
+			getUtils().playSound(R.raw.click);
 			showLeaders();
 			break;
 		case R.id.btnAchievements:
+			getUtils().playSound(R.raw.click);
 			showAchievements();
 			break;
 		case R.id.btnNewGame:
@@ -123,13 +125,16 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			getMainActivity().setFragmentNetworkGame();
 			break;
 		case R.id.sign_in_button:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().beginUserInitiatedSignIn();
 			break;
 		case R.id.sign_out_button:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().signOut();
 			updateButtons();
 			break;
 		case R.id.btnCredits:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentCredits();
 			break;
 		}
@@ -142,14 +147,12 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	}
 
 	public void showAchievements() throws Exception {
-		getUtils().playSound(R.raw.click);
 		Intent intent = Games.Achievements
 				.getAchievementsIntent(getMainActivity().getApiClient());
 		startActivityForResult(intent, REQUEST_ACHIEVEMENTS);
 	}
 
 	public void showLeaders() throws Exception {
-		getUtils().playSound(R.raw.click);
 		String boardId = getString(R.string.leaderboard_id);
 		Intent intent = Games.Leaderboards.getLeaderboardIntent(
 				getMainActivity().getApiClient(), boardId);

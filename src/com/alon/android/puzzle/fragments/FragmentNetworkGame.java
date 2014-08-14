@@ -1,5 +1,6 @@
 package com.alon.android.puzzle.fragments;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.alon.android.puzzle.Utils;
 import com.alon.android.puzzle.lazylist.ListItemData;
 import com.alon.android.puzzle.play.PartStatus;
 import com.alon.android.puzzle.play.PuzzleView;
+import com.alon.android.puzzle.play.ScoreEvent;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
@@ -46,11 +48,19 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private PuzzleView m_puzzleView;
 	private LinkedList<String> m_participants;
 	private ProgressDialog m_progress;
-	private GameInit m_gameInit;
+	private GameInit m_gameInitSelf;
+	private GameInit m_gameInitJoined;
+
+	private boolean m_seedSent;
+	private boolean m_seedReceived;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+
+		m_gameInitSelf = new GameInit(getUtils(), getGameSettings().getPieces());
+		m_seedReceived = false;
+		m_seedSent = false;
 
 		// ensure activity is set
 		getMainActivity();
@@ -81,8 +91,6 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	public void initQuickGame() {
 		getUtils().playSound(R.raw.click);
-
-		m_gameInit = new GameInit(getGameSettings().getPieces());
 
 		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
 				"Game setup in progress", true);
@@ -158,7 +166,11 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	@Override
 	public void onRealTimeMessageSent(int arg0, int arg1, String arg2) {
+		if (m_seedSent) {
+			return;
+		}
 
+		startGame(true, false);
 	}
 
 	@Override
@@ -258,7 +270,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
-		startGame();
+		sendGameSeed();
 	}
 
 	public void leaveRoom(boolean backToMainInMidGame) {
@@ -266,7 +278,8 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
-		if (getMainActivity().getApiClient().isConnected()) {
+		if (getMainActivity().getApiClient().isConnected()
+				&& getMainActivity().isSignedIn()) {
 			Games.RealTimeMultiplayer.leave(getMainActivity().getApiClient(),
 					this, m_room.getRoomId());
 		}
@@ -280,28 +293,29 @@ public class FragmentNetworkGame extends FragmentBase implements
 		}
 	}
 
-	private void startGame() throws Exception {
+	private void sendGameSeed() throws Exception {
 
 		loadParticipants();
 
 		if (m_progress != null) {
 			m_progress.setMessage("Creating puzzle seed");
 		}
-		byte[] message = Utils.serializeObject(m_gameInit);
+		byte[] message = Utils.serializeObject(m_gameInitSelf);
 		sendMessage(true, message);
+		getUtils().debug("seed sent");
 
 		Timer timer = new Timer();
 		TimerTask task = new TimerTask() {
 
 			@Override
 			public void run() {
-				startGameTimeout();
+				seedWaitTimeout();
 			}
 		};
 		timer.schedule(task, 60000);
 	}
 
-	protected void startGameTimeout() {
+	protected void seedWaitTimeout() {
 		if (m_progress == null) {
 			return;
 		}
@@ -315,17 +329,6 @@ public class FragmentNetworkGame extends FragmentBase implements
 				getMainActivity().setFragmentMain();
 			}
 		});
-	}
-
-	private void postGameInit(GameInit otherInit) {
-		m_gameInit.join(otherInit);
-
-		if (m_progress != null) {
-			m_progress.setMessage("Loading image");
-		}
-		ArrayList<ListItemData> images = FragmentDownload.getImages();
-		ListItemData data = images.get(m_gameInit.getImageIndex());
-		getUtils().download(data, this);
 	}
 
 	@Override
@@ -367,10 +370,10 @@ public class FragmentNetworkGame extends FragmentBase implements
 		m_puzzleView = puzzleView;
 	}
 
-	public void sendPartStatus(PartStatus status, boolean reliable)
+	public void sendMessage(boolean reliable, Serializable object)
 			throws Exception {
 
-		byte[] message = status.toBytes();
+		byte[] message = Utils.serializeObject(object);
 
 		sendMessage(reliable, message);
 	}
@@ -415,14 +418,56 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
+		if (object.getClass().equals(ScoreEvent.class)) {
+
+			if (m_puzzleView == null) {
+				return;
+			}
+			ScoreEvent event = (ScoreEvent) object;
+			m_puzzleView.updateScoreFromNetwork(event);
+			return;
+		}
+
 		if (object.getClass().equals(GameInit.class)) {
-			Utils.debug("game init message arrived");
+			getUtils().debug("game init message arrived");
 			GameInit otherInit = (GameInit) object;
-			postGameInit(otherInit);
+			handleSeedReceived(otherInit);
 			return;
 		}
 
 		throw new Exception("invalid message " + object.getClass().getName());
+	}
+
+	private void handleSeedReceived(GameInit otherInit) {
+		m_gameInitJoined = m_gameInitSelf.join(otherInit);
+		startGame(false, true);
+	}
+
+	/*
+	 * we need to start the game only after our seed was sent AND other seed was
+	 * received. This might be called in parallel from other threads.
+	 */
+	synchronized private void startGame(boolean seedSent, boolean seedReceived) {
+
+		if (seedSent) {
+			m_seedSent = true;
+		}
+		if (seedReceived) {
+			m_seedReceived = true;
+		}
+		if (!m_seedSent) {
+			return;
+		}
+		if (!m_seedReceived) {
+			return;
+		}
+
+		if (m_progress != null) {
+			m_progress.setMessage("Loading image");
+		}
+		ArrayList<ListItemData> images = FragmentDownload.getImages();
+		ListItemData data = images.get(m_gameInitJoined.getImageIndex());
+		getUtils().download(data, this);
 	}
 
 	@Override
@@ -439,6 +484,6 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	public GameInit getGameInit() {
-		return m_gameInit;
+		return m_gameInitJoined;
 	}
 }

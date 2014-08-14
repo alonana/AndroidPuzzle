@@ -15,23 +15,33 @@ public class ScoresDrawSingle {
 	private Paint m_textPaint;
 	private Paint m_textPaintOutline;
 
-	public ScoresDrawSingle(int score, PuzzlePart part) {
+	public ScoresDrawSingle(int score, PuzzlePart part, boolean isNetwork) {
 		m_score = "+" + score;
 		m_startTime = System.currentTimeMillis();
 		m_x = part.getLocation().centerX();
 		m_y = part.getLocation().centerY();
 
+		String colorOutline;
+		String colorFront;
+		if (isNetwork) {
+			colorOutline = "#942caf";
+			colorFront = "#eae94d";
+		} else {
+			colorOutline = "#14b7d3";
+			colorFront = "#d6272d";
+		}
+
 		m_textPaintOutline = new Paint();
 		m_textPaintOutline.setAntiAlias(true);
 		m_textPaintOutline.setTextSize(24);
-		m_textPaintOutline.setColor(Color.parseColor("#14b7d3"));
+		m_textPaintOutline.setColor(Color.parseColor(colorOutline));
 		m_textPaintOutline.setStyle(Paint.Style.STROKE);
 		m_textPaintOutline.setStrokeWidth(4);
 
 		m_textPaint = new Paint();
 		m_textPaint.setAntiAlias(true);
 		m_textPaint.setTextSize(24);
-		m_textPaint.setColor(Color.parseColor("#d6272d"));
+		m_textPaint.setColor(Color.parseColor(colorFront));
 		m_textPaint.setStyle(Paint.Style.FILL);
 	}
 
