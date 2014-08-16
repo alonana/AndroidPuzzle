@@ -210,4 +210,14 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
 	}
 
+	@Override
+	public void updateInvitations() throws Exception {
+		if (getGameSettings().getInvitations().size() == 0) {
+			return;
+		}
+
+		String message = "You have pending invitations.\nClick on 'Play with Others' to view the invitation.";
+		getUtils().message(message);
+	}
+
 }

@@ -42,5 +42,7 @@
     <string name="action_settings">Settings</string>
     <string name="cleanLog">Clean Log</string>
     <string name="logDummy">Dummy text for log</string>
-
+    <string name="inviteFriend">Invite Friend</string>
+    <string name="invitationInbox">Invitations Inbox</string>
+    
 </resources>

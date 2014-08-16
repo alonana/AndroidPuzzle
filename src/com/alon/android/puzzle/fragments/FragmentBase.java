@@ -3,8 +3,8 @@ package com.alon.android.puzzle.fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 
-import com.alon.android.puzzle.GameSettings;
 import com.alon.android.puzzle.ActivityMain;
+import com.alon.android.puzzle.GameSettings;
 import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.Utils;
 
@@ -51,6 +51,10 @@ abstract public class FragmentBase extends Fragment {
 	}
 
 	public void cleanup() {
+
+	}
+
+	public void updateInvitations() throws Exception {
 
 	}
 

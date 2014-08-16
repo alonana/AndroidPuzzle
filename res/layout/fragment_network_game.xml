@@ -24,4 +24,20 @@
         android:drawableLeft="@drawable/ic_action_play"
         android:text="@string/quickGame" />
 
+    <Button
+        android:id="@+id/btnInviteFriend"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_play"
+        android:text="@string/inviteFriend" />
+
+    <Button
+        android:id="@+id/btnInvitationInbox"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_play"
+        android:text="@string/invitationInbox" />
+
 </LinearLayout>

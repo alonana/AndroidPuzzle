@@ -1,5 +1,7 @@
 package com.alon.android.puzzle;
 
+import java.util.HashSet;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,6 +14,7 @@ public class GameSettings {
 	private static final String SETTING_PIECES = "pieces";
 	private static final String SETTING_EULA = "eula";
 	private static final String SETTING_SCORE = "score";
+	private static final String SETTING_INVITATIONS = "invitations";
 
 	private transient Context m_context;
 
@@ -19,6 +22,7 @@ public class GameSettings {
 	private int m_pieces;
 	private int m_score;
 	private boolean m_eulaAccepted;
+	private HashSet<String> m_invitations = new HashSet<String>();
 
 	public GameSettings(Context activity) {
 		m_context = activity;
@@ -39,6 +43,10 @@ public class GameSettings {
 
 	public String getImage() {
 		return m_image;
+	}
+
+	public HashSet<String> getInvitations() {
+		return m_invitations;
 	}
 
 	public void setImage(Uri uri) {
@@ -76,9 +84,11 @@ public class GameSettings {
 		m_score = preferences.getInt(SETTING_SCORE, 0);
 		String eulaAccepted = preferences.getString(SETTING_EULA, "false");
 		m_eulaAccepted = Boolean.parseBoolean(eulaAccepted);
+		m_invitations = new HashSet<String>(preferences.getStringSet(
+				SETTING_INVITATIONS, new HashSet<String>()));
 	}
 
-	private void save() {
+	public void save() {
 		String key = m_context.getString(R.string.preference_file_key);
 		SharedPreferences preferences = m_context.getSharedPreferences(key,
 				Activity.MODE_PRIVATE);
@@ -88,6 +98,7 @@ public class GameSettings {
 		editor.putString(SETTING_EULA, Boolean.toString(m_eulaAccepted));
 		editor.putInt(SETTING_PIECES, m_pieces);
 		editor.putInt(SETTING_SCORE, m_score);
+		editor.putStringSet(SETTING_INVITATIONS, m_invitations);
 
 		editor.commit();
 	}

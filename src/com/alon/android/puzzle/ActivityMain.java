@@ -16,9 +16,12 @@ import com.alon.android.puzzle.fragments.FragmentPieces;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
-public class ActivityMain extends BaseGameActivity {
+public class ActivityMain extends BaseGameActivity implements
+		OnInvitationReceivedListener {
 
 	public static final boolean INTERNAL_LOGS = true;
 
@@ -174,6 +177,31 @@ public class ActivityMain extends BaseGameActivity {
 		View view = findViewById(R.id.top);
 		Games.setViewForPopups(getApiClient(), view);
 		m_activeFragment.onSignInSucceeded();
+		Games.Invitations.registerInvitationListener(getApiClient(), this);
+	}
+
+	@Override
+	public void onInvitationReceived(Invitation invitation) {
+		try {
+			GameSettings settings = new GameSettings(this);
+			settings.getInvitations().add(invitation.getInvitationId());
+			settings.save();
+			m_activeFragment.updateInvitations();
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+	}
+
+	@Override
+	public void onInvitationRemoved(String id) {
+		try {
+			GameSettings settings = new GameSettings(this);
+			settings.getInvitations().remove(id);
+			settings.save();
+			m_activeFragment.updateInvitations();
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
 	}
 
 }

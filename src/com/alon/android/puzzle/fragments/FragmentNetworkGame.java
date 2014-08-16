@@ -15,8 +15,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.alon.android.puzzle.GameInit;
+import com.alon.android.puzzle.GameSettings;
 import com.alon.android.puzzle.InterfacePostDownload;
 import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.R;
@@ -28,6 +30,8 @@ import com.alon.android.puzzle.play.ScoreEvent;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
@@ -42,6 +46,8 @@ public class FragmentNetworkGame extends FragmentBase implements
 		RealTimeMessageReceivedListener, RoomUpdateListener,
 		InterfacePostDownload, ReliableMessageSentCallback {
 
+	private final static int RC_SELECT_PLAYERS = 10000;
+	private final static int RC_INVITATION_INBOX = 10001;
 	private final static int RC_WAITING_ROOM = 10002;
 
 	private Room m_room;
@@ -51,8 +57,10 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private GameInit m_gameInitSelf;
 	private GameInit m_gameInitJoined;
 
+	private boolean m_invited;
 	private boolean m_seedSent;
 	private boolean m_seedReceived;
+	private View m_topView;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -67,13 +75,17 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 		getUtils().loadSound(R.raw.click);
 
-		View topView = inflater.inflate(R.layout.fragment_network_game,
-				container, false);
+		m_topView = inflater.inflate(R.layout.fragment_network_game, container,
+				false);
 
-		getUtils().setPiecesButtonText(topView, R.id.btnPiecesNetwork);
-		topView.findViewById(R.id.btnQuickGame).setOnClickListener(this);
-		topView.findViewById(R.id.btnPiecesNetwork).setOnClickListener(this);
-		return topView;
+		getUtils().setPiecesButtonText(m_topView, R.id.btnPiecesNetwork);
+		m_topView.findViewById(R.id.btnQuickGame).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnPiecesNetwork).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnInviteFriend).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnInvitationInbox)
+				.setOnClickListener(this);
+		updateInboxText();
+		return m_topView;
 	}
 
 	@Override
@@ -81,17 +93,40 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 		switch (view.getId()) {
 		case R.id.btnQuickGame:
+			m_invited = false;
+			getUtils().playSound(R.raw.click);
 			initQuickGame();
 			break;
+		case R.id.btnInviteFriend:
+			m_invited = false;
+			getUtils().playSound(R.raw.click);
+			inviteFriend();
+			break;
+		case R.id.btnInvitationInbox:
+			m_invited = true;
+			getUtils().playSound(R.raw.click);
+			invitationInbox();
+			break;
 		case R.id.btnPiecesNetwork:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentPieces(true);
 			break;
 		}
 	}
 
-	public void initQuickGame() {
-		getUtils().playSound(R.raw.click);
+	private void invitationInbox() {
+		Intent intent = Games.Invitations
+				.getInvitationInboxIntent(getMainActivity().getApiClient());
+		startActivityForResult(intent, RC_INVITATION_INBOX);
+	}
 
+	private void inviteFriend() {
+		Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(
+				getMainActivity().getApiClient(), 1, 1);
+		startActivityForResult(intent, RC_SELECT_PLAYERS);
+	}
+
+	public void initQuickGame() {
 		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
 				"Game setup in progress", true);
 
@@ -261,7 +296,72 @@ public class FragmentNetworkGame extends FragmentBase implements
 			handleRoomWaitingResult(response);
 			return;
 		}
+		if (request == RC_SELECT_PLAYERS) {
+			handleInviteResult(response, data);
+			return;
+		}
+		if (request == RC_INVITATION_INBOX) {
+			handleInvitationInboxResult(response, data);
+			return;
+		}
 		super.onActivityResult(request, response, data);
+	}
+
+	private void handleInvitationInboxResult(int response, Intent data)
+			throws Exception {
+		if (response != Activity.RESULT_OK) {
+			return;
+		}
+
+		Bundle extras = data.getExtras();
+		Invitation invitation = extras
+				.getParcelable(Multiplayer.EXTRA_INVITATION);
+
+		RoomConfig.Builder builder = RoomConfig.builder(this);
+		builder.setVariant(getGameSettings().getPieces());
+		RoomConfig roomConfig = builder.setInvitationIdToAccept(
+				invitation.getInvitationId()).build();
+		Games.RealTimeMultiplayer.join(getMainActivity().getApiClient(),
+				roomConfig);
+
+		startCommunication();
+	}
+
+	private void handleInviteResult(int response, Intent data) {
+		if (response != Activity.RESULT_OK) {
+			return;
+		}
+
+		final ArrayList<String> invitees = data
+				.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+
+		Bundle autoMatchCriteria = null;
+		int minAutoMatchPlayers = data.getIntExtra(
+				Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+		int maxAutoMatchPlayers = data.getIntExtra(
+				Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+
+		if (minAutoMatchPlayers > 0) {
+			autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
+					minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+		} else {
+			autoMatchCriteria = null;
+		}
+
+		// create the room and specify a variant if appropriate
+		RoomConfig.Builder builder = RoomConfig.builder(this);
+		builder.setVariant(getGameSettings().getPieces());
+
+		builder.addPlayersToInvite(invitees);
+		builder.setRoomStatusUpdateListener(this);
+		builder.setMessageReceivedListener(this);
+		if (autoMatchCriteria != null) {
+			builder.setAutoMatchCriteria(autoMatchCriteria);
+		}
+		RoomConfig roomConfig = builder.build();
+
+		Games.RealTimeMultiplayer.create(getMainActivity().getApiClient(),
+				roomConfig);
 	}
 
 	private void handleRoomWaitingResult(int response) throws Exception {
@@ -270,7 +370,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
-		sendGameSeed();
+		startCommunication();
 	}
 
 	public void leaveRoom(boolean backToMainInMidGame) {
@@ -293,16 +393,11 @@ public class FragmentNetworkGame extends FragmentBase implements
 		}
 	}
 
-	private void sendGameSeed() throws Exception {
+	private void startCommunication() throws Exception {
 
 		loadParticipants();
-
-		if (m_progress != null) {
-			m_progress.setMessage("Creating puzzle seed");
-		}
-		byte[] message = Utils.serializeObject(m_gameInitSelf);
-		sendMessage(true, message);
-		getUtils().debug("seed sent");
+		waitForPuzzleSizeForInvited();
+		sendGameSeed();
 
 		Timer timer = new Timer();
 		TimerTask task = new TimerTask() {
@@ -313,6 +408,28 @@ public class FragmentNetworkGame extends FragmentBase implements
 			}
 		};
 		timer.schedule(task, 60000);
+	}
+
+	private void waitForPuzzleSizeForInvited() throws Exception {
+		if (!m_invited) {
+			return;
+		}
+		long startTime = System.currentTimeMillis();
+		while (!m_gameInitSelf.isJoined()) {
+			if (System.currentTimeMillis() - startTime > 60000) {
+				throw new Exception("timeuot waiting for puzzle size");
+			}
+			Thread.sleep(300);
+		}
+	}
+
+	private void sendGameSeed() throws Exception {
+		if (m_progress != null) {
+			m_progress.setMessage("Creating puzzle seed");
+		}
+		byte[] message = Utils.serializeObject(m_gameInitSelf);
+		sendMessage(true, message);
+		getUtils().debug("seed sent");
 	}
 
 	protected void seedWaitTimeout() {
@@ -334,8 +451,10 @@ public class FragmentNetworkGame extends FragmentBase implements
 	@Override
 	public void postDownload() {
 
-		m_progress.dismiss();
-		m_progress = null;
+		if (m_progress != null) {
+			m_progress.dismiss();
+			m_progress = null;
+		}
 
 		getMainActivity().setFragmentPuzzle(this);
 	}
@@ -439,6 +558,12 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void handleSeedReceived(GameInit otherInit) {
+		if (m_invited) {
+			GameSettings settings = getGameSettings();
+			settings.setPieces(otherInit.getPieces());
+			settings.save();
+			m_gameInitSelf = new GameInit(getUtils(), otherInit.getPieces());
+		}
 		m_gameInitJoined = m_gameInitSelf.join(otherInit);
 		startGame(false, true);
 	}
@@ -486,4 +611,25 @@ public class FragmentNetworkGame extends FragmentBase implements
 	public GameInit getGameInit() {
 		return m_gameInitJoined;
 	}
+
+	@Override
+	public void updateInvitations() throws Exception {
+		updateInboxText();
+	}
+
+	private void updateInboxText() {
+		Button button = (Button) m_topView
+				.findViewById(R.id.btnInvitationInbox);
+		String text = getString(R.string.invitationInbox);
+
+		int amount = getGameSettings().getInvitations().size();
+		if (amount == 0) {
+			button.setText(text + " (empty)");
+			button.setEnabled(false);
+		} else {
+			button.setText(text + " (" + amount + ")");
+			button.setEnabled(true);
+		}
+	}
+
 }

@@ -12,6 +12,7 @@ public class GameInit implements Serializable {
 	transient private boolean m_joined;
 	transient private Utils m_utils;
 
+	private short m_pieces;
 	private short m_imageIndex;
 	private short[] m_rotation;
 
@@ -21,6 +22,7 @@ public class GameInit implements Serializable {
 
 	public GameInit(Utils utils, int pieces) {
 		m_utils = utils;
+		m_pieces = (short) pieces;
 		Random random = new Random();
 		m_imageIndex = (short) random.nextInt(FragmentDownload.getImages()
 				.size());
@@ -70,6 +72,14 @@ public class GameInit implements Serializable {
 
 	public int getRotation(int piece) {
 		return m_rotation[piece];
+	}
+
+	public int getPieces() {
+		return m_pieces;
+	}
+
+	public boolean isJoined() {
+		return m_joined;
 	}
 
 	@Override
