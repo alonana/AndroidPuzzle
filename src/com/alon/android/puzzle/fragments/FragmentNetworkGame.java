@@ -54,7 +54,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private PuzzleView m_puzzleView;
 	private LinkedList<String> m_participants;
 	private ProgressDialog m_progress;
-	private GameInit m_gameInitSelf;
+	private volatile GameInit m_gameInitSelf;
 	private GameInit m_gameInitJoined;
 
 	private boolean m_invited;
@@ -95,7 +95,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		case R.id.btnQuickGame:
 			m_invited = false;
 			getUtils().playSound(R.raw.click);
-			initQuickGame();
+			handleQuickGame();
 			break;
 		case R.id.btnInviteFriend:
 			m_invited = false;
@@ -115,33 +115,43 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void invitationInbox() {
+		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
+				"Invitation inbox in progress", true);
+
 		Intent intent = Games.Invitations
 				.getInvitationInboxIntent(getMainActivity().getApiClient());
 		startActivityForResult(intent, RC_INVITATION_INBOX);
 	}
 
 	private void inviteFriend() {
+		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
+				"Inviting game in progress", true);
+
 		Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(
 				getMainActivity().getApiClient(), 1, 1);
 		startActivityForResult(intent, RC_SELECT_PLAYERS);
 	}
 
-	public void initQuickGame() {
+	public void handleQuickGame() {
 		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
-				"Game setup in progress", true);
+				"Network setup in progress", true);
 
 		Bundle autoMatch = RoomConfig.createAutoMatchCriteria(1, 1, 0);
 
-		RoomConfig.Builder builder = RoomConfig.builder(this);
+		RoomConfig.Builder builder = createRoomConfigBuilder();
 		builder.setVariant(getGameSettings().getPieces());
-
 		builder.setAutoMatchCriteria(autoMatch);
-		builder.setRoomStatusUpdateListener(this);
-		builder.setMessageReceivedListener(this);
 		RoomConfig roomConfig = builder.build();
 
 		Games.RealTimeMultiplayer.create(getMainActivity().getApiClient(),
 				roomConfig);
+	}
+
+	private RoomConfig.Builder createRoomConfigBuilder() {
+		RoomConfig.Builder builder = RoomConfig.builder(this);
+		builder.setRoomStatusUpdateListener(this);
+		builder.setMessageReceivedListener(this);
+		return builder;
 	}
 
 	@Override
@@ -310,6 +320,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private void handleInvitationInboxResult(int response, Intent data)
 			throws Exception {
 		if (response != Activity.RESULT_OK) {
+			progressDismiss();
 			return;
 		}
 
@@ -317,18 +328,17 @@ public class FragmentNetworkGame extends FragmentBase implements
 		Invitation invitation = extras
 				.getParcelable(Multiplayer.EXTRA_INVITATION);
 
-		RoomConfig.Builder builder = RoomConfig.builder(this);
+		RoomConfig.Builder builder = createRoomConfigBuilder();
 		builder.setVariant(getGameSettings().getPieces());
 		RoomConfig roomConfig = builder.setInvitationIdToAccept(
 				invitation.getInvitationId()).build();
 		Games.RealTimeMultiplayer.join(getMainActivity().getApiClient(),
 				roomConfig);
-
-		startCommunication();
 	}
 
 	private void handleInviteResult(int response, Intent data) {
 		if (response != Activity.RESULT_OK) {
+			progressDismiss();
 			return;
 		}
 
@@ -349,12 +359,9 @@ public class FragmentNetworkGame extends FragmentBase implements
 		}
 
 		// create the room and specify a variant if appropriate
-		RoomConfig.Builder builder = RoomConfig.builder(this);
+		RoomConfig.Builder builder = createRoomConfigBuilder();
 		builder.setVariant(getGameSettings().getPieces());
-
 		builder.addPlayersToInvite(invitees);
-		builder.setRoomStatusUpdateListener(this);
-		builder.setMessageReceivedListener(this);
 		if (autoMatchCriteria != null) {
 			builder.setAutoMatchCriteria(autoMatchCriteria);
 		}
@@ -366,6 +373,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	private void handleRoomWaitingResult(int response) throws Exception {
 		if (response != Activity.RESULT_OK) {
+			progressDismiss();
 			leaveRoom(true);
 			return;
 		}
@@ -417,7 +425,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		long startTime = System.currentTimeMillis();
 		while (!m_gameInitSelf.isJoined()) {
 			if (System.currentTimeMillis() - startTime > 60000) {
-				throw new Exception("timeuot waiting for puzzle size");
+				throw new Exception("timeout waiting for puzzle size");
 			}
 			Thread.sleep(300);
 		}
@@ -440,21 +448,25 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 			@Override
 			public void run() {
-				m_progress.dismiss();
-				m_progress = null;
+				progressDismiss();
 				getUtils().message("Timeout initiating game seed, quitting");
 				getMainActivity().setFragmentMain();
 			}
 		});
 	}
 
+	private void progressDismiss() {
+		if (m_progress == null) {
+			return;
+		}
+		m_progress.dismiss();
+		m_progress = null;
+	}
+
 	@Override
 	public void postDownload() {
 
-		if (m_progress != null) {
-			m_progress.dismiss();
-			m_progress = null;
-		}
+		progressDismiss();
 
 		getMainActivity().setFragmentPuzzle(this);
 	}
@@ -597,10 +609,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	@Override
 	public void cleanup() {
-		if (m_progress != null) {
-			m_progress.dismiss();
-			m_progress = null;
-		}
+		progressDismiss();
 
 		/*
 		 * Notice: Do not leaveRoom() on cleanup, as we need to keep it for the
@@ -625,10 +634,10 @@ public class FragmentNetworkGame extends FragmentBase implements
 		int amount = getGameSettings().getInvitations().size();
 		if (amount == 0) {
 			button.setText(text + " (empty)");
-			button.setEnabled(false);
+			// button.setEnabled(false);
 		} else {
 			button.setText(text + " (" + amount + ")");
-			button.setEnabled(true);
+			// button.setEnabled(true);
 		}
 	}
 

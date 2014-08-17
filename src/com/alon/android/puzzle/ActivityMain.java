@@ -174,19 +174,36 @@ public class ActivityMain extends BaseGameActivity implements
 
 	@Override
 	public void onSignInSucceeded() {
+		try {
+			onSignInSucceededWorker();
+		} catch (Exception e) {
+			m_utils.handleError(e);
+		}
+	}
+
+	public void onSignInSucceededWorker() throws Exception {
 		View view = findViewById(R.id.top);
 		Games.setViewForPopups(getApiClient(), view);
 		m_activeFragment.onSignInSucceeded();
 		Games.Invitations.registerInvitationListener(getApiClient(), this);
+
+		String invitationId = getInvitationId();
+		if (getInvitationId() != null) {
+			updateInvitation(invitationId);
+		}
+	}
+
+	private void updateInvitation(String invitationId) throws Exception {
+		GameSettings settings = new GameSettings(this);
+		settings.getInvitations().add(invitationId);
+		settings.save();
+		m_activeFragment.updateInvitations();
 	}
 
 	@Override
 	public void onInvitationReceived(Invitation invitation) {
 		try {
-			GameSettings settings = new GameSettings(this);
-			settings.getInvitations().add(invitation.getInvitationId());
-			settings.save();
-			m_activeFragment.updateInvitations();
+			updateInvitation(invitation.getInvitationId());
 		} catch (Exception e) {
 			m_utils.handleError(e);
 		}

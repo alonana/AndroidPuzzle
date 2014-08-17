@@ -207,7 +207,8 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnLeaders).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnAchievements).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setVisibility(postSign);
-		m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
+		// TODO: handle g+1
+		// m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
 	}
 
 	@Override
