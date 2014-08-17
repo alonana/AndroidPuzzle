@@ -422,6 +422,9 @@ public class FragmentNetworkGame extends FragmentBase implements
 		if (!m_invited) {
 			return;
 		}
+		if (m_progress != null) {
+			m_progress.setMessage("Waiting for puzzle size");
+		}
 		long startTime = System.currentTimeMillis();
 		while (!m_gameInitSelf.isJoined()) {
 			if (System.currentTimeMillis() - startTime > 60000) {
@@ -577,6 +580,9 @@ public class FragmentNetworkGame extends FragmentBase implements
 			m_gameInitSelf = new GameInit(getUtils(), otherInit.getPieces());
 		}
 		m_gameInitJoined = m_gameInitSelf.join(otherInit);
+		if (m_progress != null) {
+			m_progress.setMessage("Remote seed received");
+		}
 		startGame(false, true);
 	}
 
