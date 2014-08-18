@@ -1,5 +1,7 @@
 package com.alon.android.puzzle.fragments;
 
+import java.util.HashSet;
+
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +20,8 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 	private static final int REQUEST_LEADERBOARD = 101;
 	private static final int REQUEST_ACHIEVEMENTS = 102;
+
+	private static HashSet<String> m_notifiedInvitations = new HashSet<String>();
 
 	private View m_topView;
 	private PlusOneButton m_plusOneButton;
@@ -61,6 +65,8 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		} catch (Exception e) {
 			getUtils().handleError(e);
 		}
+
+		getMainActivity().reloadInvitations();
 		return m_topView;
 	}
 
@@ -214,6 +220,18 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 	@Override
 	public void updateInvitations() throws Exception {
 		if (getGameSettings().getInvitations().size() == 0) {
+			return;
+		}
+
+		boolean newInvitation = false;
+		for (String id : getGameSettings().getInvitations()) {
+			if (!m_notifiedInvitations.contains(id)) {
+				m_notifiedInvitations.add(id);
+				newInvitation = true;
+			}
+		}
+
+		if (!newInvitation) {
 			return;
 		}
 

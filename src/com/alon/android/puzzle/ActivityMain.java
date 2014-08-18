@@ -15,13 +15,17 @@ import com.alon.android.puzzle.fragments.FragmentNewGame;
 import com.alon.android.puzzle.fragments.FragmentPieces;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.multiplayer.Invitation;
-import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
+import com.google.android.gms.games.multiplayer.InvitationBuffer;
+import com.google.android.gms.games.multiplayer.Invitations;
+import com.google.android.gms.games.multiplayer.Invitations.LoadInvitationsResult;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 public class ActivityMain extends BaseGameActivity implements
-		OnInvitationReceivedListener {
+		ResultCallback<LoadInvitationsResult> {
 
 	public static final boolean INTERNAL_LOGS = true;
 
@@ -185,40 +189,35 @@ public class ActivityMain extends BaseGameActivity implements
 		View view = findViewById(R.id.top);
 		Games.setViewForPopups(getApiClient(), view);
 		m_activeFragment.onSignInSucceeded();
-		Games.Invitations.registerInvitationListener(getApiClient(), this);
+		reloadInvitations();
+	}
 
-		String invitationId = getInvitationId();
-		if (getInvitationId() != null) {
-			updateInvitation(invitationId);
+	public void reloadInvitations() {
+		PendingResult<Invitations.LoadInvitationsResult> result = Games.Invitations
+				.loadInvitations(getApiClient());
+		result.setResultCallback(this);
+	}
+
+	@Override
+	public void onResult(LoadInvitationsResult result) {
+		try {
+			onResultWorker(result);
+		} catch (Exception e) {
+			m_utils.handleError(e);
 		}
 	}
 
-	private void updateInvitation(String invitationId) throws Exception {
+	public void onResultWorker(LoadInvitationsResult result) throws Exception {
 		GameSettings settings = new GameSettings(this);
-		settings.getInvitations().add(invitationId);
+		settings.getInvitations().clear();
+
+		InvitationBuffer buffer = result.getInvitations();
+		for (Invitation invitation : buffer) {
+			settings.getInvitations().add(invitation.getInvitationId());
+		}
+		buffer.close();
 		settings.save();
 		m_activeFragment.updateInvitations();
-	}
-
-	@Override
-	public void onInvitationReceived(Invitation invitation) {
-		try {
-			updateInvitation(invitation.getInvitationId());
-		} catch (Exception e) {
-			m_utils.handleError(e);
-		}
-	}
-
-	@Override
-	public void onInvitationRemoved(String id) {
-		try {
-			GameSettings settings = new GameSettings(this);
-			settings.getInvitations().remove(id);
-			settings.save();
-			m_activeFragment.updateInvitations();
-		} catch (Exception e) {
-			m_utils.handleError(e);
-		}
 	}
 
 }

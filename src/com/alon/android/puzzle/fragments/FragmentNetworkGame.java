@@ -57,6 +57,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private ProgressDialog m_progress;
 	private volatile GameInit m_gameInitSelf;
 	private GameInit m_gameInitJoined;
+	private boolean m_checkInvitations;
 
 	private boolean m_invited;
 	private boolean m_seedSent;
@@ -86,7 +87,30 @@ public class FragmentNetworkGame extends FragmentBase implements
 		m_topView.findViewById(R.id.btnInvitationInbox)
 				.setOnClickListener(this);
 		updateInboxText();
+
+		createCheckInvitationsThread();
+
 		return m_topView;
+	}
+
+	private void createCheckInvitationsThread() {
+		m_checkInvitations = true;
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				checkInvitationsLoop();
+			}
+		};
+		Thread thread = new Thread(runnable);
+		thread.start();
+	}
+
+	protected void checkInvitationsLoop() {
+		while (m_checkInvitations) {
+			getMainActivity().reloadInvitations();
+			Utils.sleep(5000);
+		}
 	}
 
 	@Override
@@ -639,6 +663,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	@Override
 	public void cleanup() {
+		m_checkInvitations = false;
 		progressDismiss();
 
 		/*
@@ -661,6 +686,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 				.findViewById(R.id.btnInvitationInbox);
 		String text = getString(R.string.invitationInbox);
 
+		getGameSettings().load();
 		int amount = getGameSettings().getInvitations().size();
 		if (amount == 0) {
 			button.setText(text + " (empty)");
