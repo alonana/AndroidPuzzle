@@ -10,6 +10,7 @@ import java.util.TimerTask;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -115,8 +116,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void invitationInbox() {
-		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
-				"Invitation inbox in progress", true);
+		progressCreate("Invitation inbox in progress");
 
 		Intent intent = Games.Invitations
 				.getInvitationInboxIntent(getMainActivity().getApiClient());
@@ -124,8 +124,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void inviteFriend() {
-		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
-				"Inviting game in progress", true);
+		progressCreate("Inviting game in progress");
 
 		Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(
 				getMainActivity().getApiClient(), 1, 1);
@@ -133,8 +132,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	public void handleQuickGame() {
-		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
-				"Network setup in progress", true);
+		progressCreate("Network setup in progress");
 
 		Bundle autoMatch = RoomConfig.createAutoMatchCriteria(1, 1, 0);
 
@@ -297,6 +295,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 			onActivityResultWorker(request, response, data);
 		} catch (Exception e) {
 			getUtils().handleError(e);
+			leaveRoom(true);
 		}
 	}
 
@@ -403,6 +402,26 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	private void startCommunication() throws Exception {
 
+		// run in background to avoid lock of GMS
+		AsyncTask<Void, Integer, Void> task = new AsyncTask<Void, Integer, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				try {
+					startCommunicationWorker();
+				} catch (Exception e) {
+					getUtils().handleError(e);
+					leaveRoom(true);
+				}
+				return null;
+			}
+		};
+		task.execute((Void) null);
+
+	}
+
+	private void startCommunicationWorker() throws Exception {
+
 		loadParticipants();
 		waitForPuzzleSizeForInvited();
 		sendGameSeed();
@@ -422,9 +441,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		if (!m_invited) {
 			return;
 		}
-		if (m_progress != null) {
-			m_progress.setMessage("Waiting for puzzle size");
-		}
+		progressUpdate("Waiting for puzzle size");
 		long startTime = System.currentTimeMillis();
 		while (!m_gameInitSelf.isJoined()) {
 			if (System.currentTimeMillis() - startTime > 60000) {
@@ -435,9 +452,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void sendGameSeed() throws Exception {
-		if (m_progress != null) {
-			m_progress.setMessage("Creating puzzle seed");
-		}
+		progressUpdate("Creating puzzle seed");
 		byte[] message = Utils.serializeObject(m_gameInitSelf);
 		sendMessage(true, message);
 		getUtils().debug("seed sent");
@@ -458,6 +473,23 @@ public class FragmentNetworkGame extends FragmentBase implements
 		});
 	}
 
+	private void progressCreate(String message) {
+		m_progress = ProgressDialog.show(getMainActivity(), "Network Puzzle",
+				message, true);
+	}
+
+	private void progressUpdate(final String message) {
+		if (m_progress != null) {
+			getMainActivity().runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					m_progress.setMessage(message);
+				}
+			});
+		}
+	}
+
 	private void progressDismiss() {
 		if (m_progress == null) {
 			return;
@@ -468,16 +500,12 @@ public class FragmentNetworkGame extends FragmentBase implements
 
 	@Override
 	public void postDownload() {
-
 		progressDismiss();
-
 		getMainActivity().setFragmentPuzzle(this);
 	}
 
 	private void loadParticipants() {
-		if (m_progress != null) {
-			m_progress.setMessage("Loading participants list");
-		}
+		progressUpdate("Loading participants list");
 
 		String myPlayerId = Games.Players.getCurrentPlayerId(getMainActivity()
 				.getApiClient());
@@ -580,9 +608,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 			m_gameInitSelf = new GameInit(getUtils(), otherInit.getPieces());
 		}
 		m_gameInitJoined = m_gameInitSelf.join(otherInit);
-		if (m_progress != null) {
-			m_progress.setMessage("Remote seed received");
-		}
+		progressUpdate("Remote seed received");
 		startGame(false, true);
 	}
 
@@ -605,9 +631,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
-		if (m_progress != null) {
-			m_progress.setMessage("Loading image");
-		}
+		progressUpdate("Loading image");
 		ArrayList<ListItemData> images = FragmentDownload.getImages();
 		ListItemData data = images.get(m_gameInitJoined.getImageIndex());
 		getUtils().download(data, this);

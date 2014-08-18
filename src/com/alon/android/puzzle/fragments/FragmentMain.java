@@ -79,7 +79,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 		final Dialog dialog = new Dialog(getMainActivity());
 		dialog.setContentView(R.layout.dialog_eula);
-		dialog.setTitle("end user license agreement");
+		dialog.setTitle("License Agreement");
 		TextView text = (TextView) dialog.findViewById(R.id.textEula);
 		text.setText(getUtils().getResourceText(R.raw.eula));
 		text.setMovementMethod(new ScrollingMovementMethod());
