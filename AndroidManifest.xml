@@ -44,7 +44,7 @@
         <activity android:name=".PiecesActivity" >
         </activity>
         <activity
-            android:name=".ActivityLogs"
+            android:name=".ActivityDeveloper"
             android:label="@string/title_activity_logs" >
         </activity>
     </application>

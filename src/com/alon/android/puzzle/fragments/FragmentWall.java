@@ -8,7 +8,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.alon.android.puzzle.ActivityLogs;
+import com.alon.android.puzzle.ActivityDeveloper;
 import com.alon.android.puzzle.ActivityMain;
 import com.alon.android.puzzle.R;
 import com.google.android.gms.games.Games;
@@ -116,7 +116,7 @@ public class FragmentWall extends FragmentBase implements OnClickListener {
 	}
 
 	public void startLogActivity() {
-		Intent intent = new Intent(getMainActivity(), ActivityLogs.class);
+		Intent intent = new Intent(getMainActivity(), ActivityDeveloper.class);
 		startActivity(intent);
 	}
 

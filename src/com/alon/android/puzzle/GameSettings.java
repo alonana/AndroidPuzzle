@@ -103,4 +103,15 @@ public class GameSettings {
 		editor.commit();
 	}
 
+	public void cleanup() {
+		String key = m_context.getString(R.string.preference_file_key);
+		SharedPreferences preferences = m_context.getSharedPreferences(key,
+				Activity.MODE_PRIVATE);
+		Editor editor = preferences.edit();
+		editor.clear();
+		editor.commit();
+
+		load();
+	}
+
 }

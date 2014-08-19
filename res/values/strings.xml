@@ -17,7 +17,7 @@
     <string name="decline">Decline</string>
     <string name="hello_world">Hello world!</string>
     <string name="selectPieces">Select Puzzle Difficulty:</string>
-    <string name="logs">Logs</string>
+    <string name="developer">Developer</string>
     <string name="size2">2 x 2</string>
     <string name="size3">3 x 3</string>
     <string name="size4">4 x 4</string>
@@ -45,5 +45,6 @@
     <string name="inviteFriend">Invite Friend</string>
     <string name="invitationInbox">Invitations Inbox</string>
     <string name="wall">The Wall</string>
+    <string name="cleanSettings">Clean Settings</string>
     
 </resources>

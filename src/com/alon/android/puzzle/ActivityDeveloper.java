@@ -12,7 +12,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
-public class ActivityLogs extends ActionBarActivity implements OnClickListener {
+public class ActivityDeveloper extends ActionBarActivity implements
+		OnClickListener {
 
 	private Utils m_utils;
 	private TextView m_textLog;
@@ -32,12 +33,13 @@ public class ActivityLogs extends ActionBarActivity implements OnClickListener {
 
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_logs);
+		setContentView(R.layout.activity_developer);
 
 		m_utils.loadSound(R.raw.click);
 
 		findViewById(R.id.btnCleanLog).setOnClickListener(this);
 		findViewById(R.id.btnEmailLog).setOnClickListener(this);
+		findViewById(R.id.btnCleanSettings).setOnClickListener(this);
 
 		m_textLog = (TextView) findViewById(R.id.textLog);
 		m_textLog.setMovementMethod(new ScrollingMovementMethod());
@@ -90,7 +92,16 @@ public class ActivityLogs extends ActionBarActivity implements OnClickListener {
 			m_utils.playSound(R.raw.click);
 			emailLog();
 			break;
+		case R.id.btnCleanSettings:
+			m_utils.playSound(R.raw.click);
+			cleanSettings();
+			break;
 		}
+	}
+
+	private void cleanSettings() throws Exception {
+		GameSettings settings = new GameSettings(this);
+		settings.cleanup();
 	}
 
 	public void cleanLog() throws Exception {

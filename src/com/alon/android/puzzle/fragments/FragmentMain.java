@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alon.android.puzzle.R;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.plus.PlusOneButton;
 
 public class FragmentMain extends FragmentBase implements OnClickListener {
@@ -80,7 +81,12 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		dialog.setContentView(R.layout.dialog_eula);
 		dialog.setTitle("License Agreement");
 		TextView text = (TextView) dialog.findViewById(R.id.textEula);
-		text.setText(getUtils().getResourceText(R.raw.eula));
+		StringBuilder data = new StringBuilder();
+		data.append(getUtils().getResourceText(R.raw.eula));
+		data.append("\n\n\n");
+		data.append(GooglePlayServicesUtil
+				.getOpenSourceSoftwareLicenseInfo(getMainActivity()));
+		text.setText(data);
 		text.setMovementMethod(new ScrollingMovementMethod());
 
 		dialog.findViewById(R.id.btnAccept).setOnClickListener(
