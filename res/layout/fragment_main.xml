@@ -73,30 +73,12 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/btnLeaders"
+        android:id="@+id/btnWall"
         style="@style/btnStyleSandrift"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/leadersBoard"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/btnAchievements"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/achievements"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/btnCredits"
-        style="@style/btnStyleSandrift"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_action_important"
-        android:text="@string/credits" />
+        android:text="@string/wall" />
 
     <Button
         android:id="@+id/sign_out_button"

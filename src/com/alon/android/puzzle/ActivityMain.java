@@ -14,6 +14,7 @@ import com.alon.android.puzzle.fragments.FragmentNetworkGame;
 import com.alon.android.puzzle.fragments.FragmentNewGame;
 import com.alon.android.puzzle.fragments.FragmentPieces;
 import com.alon.android.puzzle.fragments.FragmentPuzzle;
+import com.alon.android.puzzle.fragments.FragmentWall;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -105,6 +106,11 @@ public class ActivityMain extends BaseGameActivity implements
 		setFragment(fragment);
 	}
 
+	public void setFragmentWall() {
+		FragmentWall fragment = new FragmentWall();
+		setFragment(fragment);
+	}
+
 	public void setFragmentDownload() {
 		FragmentDownload fragment = new FragmentDownload();
 		setFragment(fragment);
@@ -134,12 +140,14 @@ public class ActivityMain extends BaseGameActivity implements
 			setFragmentNewGame();
 		} else if (m_activeFragment instanceof FragmentPuzzle) {
 			setFragmentMain();
+		} else if (m_activeFragment instanceof FragmentWall) {
+			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentNewGame) {
 			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentNetworkGame) {
 			setFragmentMain();
 		} else if (m_activeFragment instanceof FragmentCredits) {
-			setFragmentMain();
+			setFragmentWall();
 		} else if (m_activeFragment instanceof FragmentDownload) {
 			setFragmentNewGame();
 		} else {

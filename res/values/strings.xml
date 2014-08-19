@@ -44,5 +44,6 @@
     <string name="logDummy">Dummy text for log</string>
     <string name="inviteFriend">Invite Friend</string>
     <string name="invitationInbox">Invitations Inbox</string>
+    <string name="wall">The Wall</string>
     
 </resources>

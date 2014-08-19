@@ -3,7 +3,6 @@ package com.alon.android.puzzle.fragments;
 import java.util.HashSet;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
@@ -13,13 +12,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alon.android.puzzle.R;
-import com.google.android.gms.games.Games;
 import com.google.android.gms.plus.PlusOneButton;
 
 public class FragmentMain extends FragmentBase implements OnClickListener {
-
-	private static final int REQUEST_LEADERBOARD = 101;
-	private static final int REQUEST_ACHIEVEMENTS = 102;
 
 	private static HashSet<String> m_notifiedInvitations = new HashSet<String>();
 
@@ -51,9 +46,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_out_button).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnNewGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnLeaders).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);
-		m_topView.findViewById(R.id.btnCredits).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnWall).setOnClickListener(this);
 
 		m_plusOneButton = (PlusOneButton) m_topView
 				.findViewById(R.id.btnGooglePlusOne);
@@ -127,14 +120,6 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 
 	private void onClickWorker(View view) throws Exception {
 		switch (view.getId()) {
-		case R.id.btnLeaders:
-			getUtils().playSound(R.raw.click);
-			showLeaders();
-			break;
-		case R.id.btnAchievements:
-			getUtils().playSound(R.raw.click);
-			showAchievements();
-			break;
 		case R.id.btnNewGame:
 			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentNewGame();
@@ -152,9 +137,9 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			getMainActivity().signOut();
 			updateButtons();
 			break;
-		case R.id.btnCredits:
+		case R.id.btnWall:
 			getUtils().playSound(R.raw.click);
-			getMainActivity().setFragmentCredits();
+			getMainActivity().setFragmentWall();
 			break;
 		}
 	}
@@ -163,19 +148,6 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		TextView text = (TextView) m_topView.findViewById(R.id.txtScore);
 		text.setText(Integer.toString(getGameSettings().getScore()));
 		text.invalidate();
-	}
-
-	public void showAchievements() throws Exception {
-		Intent intent = Games.Achievements
-				.getAchievementsIntent(getMainActivity().getApiClient());
-		startActivityForResult(intent, REQUEST_ACHIEVEMENTS);
-	}
-
-	public void showLeaders() throws Exception {
-		String boardId = getString(R.string.leaderboard_id);
-		Intent intent = Games.Leaderboards.getLeaderboardIntent(
-				getMainActivity().getApiClient(), boardId);
-		startActivityForResult(intent, REQUEST_LEADERBOARD);
 	}
 
 	@Override
@@ -210,8 +182,6 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.textSignDescription).setVisibility(preSign);
 		m_topView.findViewById(R.id.sign_in_button).setVisibility(preSign);
 		m_topView.findViewById(R.id.sign_out_button).setVisibility(postSign);
-		m_topView.findViewById(R.id.btnLeaders).setVisibility(postSign);
-		m_topView.findViewById(R.id.btnAchievements).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setVisibility(postSign);
 		// TODO: handle g+1
 		// m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
