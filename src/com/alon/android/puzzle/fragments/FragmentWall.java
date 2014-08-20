@@ -122,14 +122,14 @@ public class FragmentWall extends FragmentBase implements OnClickListener {
 
 	public void showAchievements() throws Exception {
 		Intent intent = Games.Achievements
-				.getAchievementsIntent(getMainActivity().getApiClient());
+				.getAchievementsIntent(getApiClient());
 		startActivityForResult(intent, REQUEST_ACHIEVEMENTS);
 	}
 
 	public void showLeaders() throws Exception {
 		String boardId = getString(R.string.leaderboard_id);
-		Intent intent = Games.Leaderboards.getLeaderboardIntent(
-				getMainActivity().getApiClient(), boardId);
+		Intent intent = Games.Leaderboards.getLeaderboardIntent(getApiClient(),
+				boardId);
 		startActivityForResult(intent, REQUEST_LEADERBOARD);
 	}
 

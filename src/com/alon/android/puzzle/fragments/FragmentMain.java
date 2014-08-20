@@ -48,6 +48,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.btnNewGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnWall).setOnClickListener(this);
+		m_topView.findViewById(R.id.btnSendPuzzle).setOnClickListener(this);
 
 		m_plusOneButton = (PlusOneButton) m_topView
 				.findViewById(R.id.btnGooglePlusOne);
@@ -128,6 +129,12 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		switch (view.getId()) {
 		case R.id.btnNewGame:
 			getUtils().playSound(R.raw.click);
+			getMainActivity().setSendToFriend(false);
+			getMainActivity().setFragmentNewGame();
+			break;
+		case R.id.btnSendPuzzle:
+			getUtils().playSound(R.raw.click);
+			getMainActivity().setSendToFriend(true);
 			getMainActivity().setFragmentNewGame();
 			break;
 		case R.id.btnNewNetworkGame:
@@ -189,6 +196,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 		m_topView.findViewById(R.id.sign_in_button).setVisibility(preSign);
 		m_topView.findViewById(R.id.sign_out_button).setVisibility(postSign);
 		m_topView.findViewById(R.id.btnNewNetworkGame).setVisibility(postSign);
+		m_topView.findViewById(R.id.btnSendPuzzle).setVisibility(postSign);
 		// TODO: handle g+1
 		// m_topView.findViewById(R.id.btnGooglePlusOne).setVisibility(postSign);
 	}

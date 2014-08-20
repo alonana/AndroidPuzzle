@@ -7,6 +7,7 @@ import com.alon.android.puzzle.ActivityMain;
 import com.alon.android.puzzle.GameSettings;
 import com.alon.android.puzzle.PuzzleException;
 import com.alon.android.puzzle.Utils;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 abstract public class FragmentBase extends Fragment {
 
@@ -22,6 +23,10 @@ abstract public class FragmentBase extends Fragment {
 			}
 		}
 		return m_mainActivity;
+	}
+
+	public GoogleApiClient getApiClient() {
+		return getMainActivity().getApiClient();
 	}
 
 	public Utils getUtils() {

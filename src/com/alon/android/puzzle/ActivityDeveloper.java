@@ -117,7 +117,7 @@ public class ActivityDeveloper extends ActionBarActivity implements
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_EMAIL,
 				new String[] { "alonana@gmail.com" });
-		intent.putExtra(Intent.EXTRA_SUBJECT, "PuzzleMe Log");
+		intent.putExtra(Intent.EXTRA_SUBJECT, Utils.APP_NAME + " Log");
 		intent.putExtra(Intent.EXTRA_TEXT, m_textLog.getText());
 		startActivity(Intent.createChooser(intent, "Email log..."));
 	}

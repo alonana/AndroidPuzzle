@@ -24,6 +24,7 @@ import com.google.android.gms.games.multiplayer.InvitationBuffer;
 import com.google.android.gms.games.multiplayer.Invitations;
 import com.google.android.gms.games.multiplayer.Invitations.LoadInvitationsResult;
 import com.google.example.games.basegameutils.BaseGameActivity;
+import com.google.example.games.basegameutils.GameHelper;
 
 public class ActivityMain extends BaseGameActivity implements
 		ResultCallback<LoadInvitationsResult> {
@@ -32,6 +33,11 @@ public class ActivityMain extends BaseGameActivity implements
 
 	private Utils m_utils;
 	private FragmentBase m_activeFragment;
+	private boolean m_sendToFriend;
+
+	public ActivityMain() {
+		mRequestedClients = GameHelper.CLIENT_ALL;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +98,10 @@ public class ActivityMain extends BaseGameActivity implements
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		FragmentMain fragment = new FragmentMain();
 		setFragment(fragment);
+	}
+
+	public void setSendToFriend(boolean send) {
+		m_sendToFriend = send;
 	}
 
 	public void setFragmentNewGame() {
@@ -228,4 +238,7 @@ public class ActivityMain extends BaseGameActivity implements
 		m_activeFragment.updateInvitations();
 	}
 
+	public boolean isSendToFriend() {
+		return m_sendToFriend;
+	}
 }

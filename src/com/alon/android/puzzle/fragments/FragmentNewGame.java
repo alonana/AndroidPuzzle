@@ -83,6 +83,15 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		}
 
 		m_topView.findViewById(R.id.btnDownload).setVisibility(postSign);
+
+		Button buttonStart = (Button) m_topView.findViewById(R.id.btnStart);
+		int id;
+		if (getMainActivity().isSendToFriend()) {
+			id = R.string.send;
+		} else {
+			id = R.string.start;
+		}
+		buttonStart.setText(getString(id));
 	}
 
 	@Override
@@ -161,23 +170,26 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	private void handleClick(View view) throws Exception {
-
-		getUtils().playSound(R.raw.click);
-
 		switch (view.getId()) {
 		case R.id.btnCamera:
+			getUtils().playSound(R.raw.click);
 			getPictureFromCamera();
 			break;
 		case R.id.btnGallery:
+			getUtils().playSound(R.raw.click);
 			getPictureFromGallery();
 			break;
 		case R.id.btnDownload:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentDownload();
 			break;
 		case R.id.btnStart:
+			// not using the default click
+			// getUtils().playSound(R.raw.click);
 			startPuzzle();
 			break;
 		case R.id.btnPieces:
+			getUtils().playSound(R.raw.click);
 			getMainActivity().setFragmentPieces(false);
 			break;
 		}
@@ -214,10 +226,13 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	private void startPuzzle() {
-
-		getUtils().playSound(R.raw.start);
-
-		getMainActivity().setFragmentPuzzle(null);
+		if (getMainActivity().isSendToFriend()) {
+			getUtils().playSound(R.raw.click);
+			new DriveHandler(this).createImage();
+		} else {
+			getUtils().playSound(R.raw.start);
+			getMainActivity().setFragmentPuzzle(null);
+		}
 	}
 
 	@Override
@@ -258,4 +273,5 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		intent.setData(m_cameraOutputUri);
 		getActivity().sendBroadcast(intent);
 	}
+
 }

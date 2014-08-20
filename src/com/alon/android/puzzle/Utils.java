@@ -39,7 +39,7 @@ import com.alon.android.puzzle.lazylist.ListItemData;
 @SuppressLint("UseSparseArrays")
 public class Utils {
 
-	private static final String LOG_TAG = "PuzzleMe";
+	public static final String APP_NAME = "PuzzleMe";
 
 	private Context m_context;
 	private SoundPool m_sound;
@@ -135,14 +135,14 @@ public class Utils {
 
 	public void handleError(Exception e, String message) {
 		logError(e, message);
-		message("error in application " + message);
+		message("Application Error\n" + message);
 	}
 
 	public void logError(Exception e, String message) {
 		if (e == null) {
-			Log.e(LOG_TAG, "error in application: " + message);
+			Log.e(APP_NAME, "Error: " + message);
 		} else {
-			Log.e(LOG_TAG, "error in application", e);
+			Log.e(APP_NAME, "Application Error", e);
 		}
 
 		internalLog(e, message);
@@ -150,7 +150,7 @@ public class Utils {
 
 	public void debug(Object logged) {
 		String message = logged.toString();
-		Log.d(LOG_TAG, message);
+		Log.d(APP_NAME, message);
 		internalLog(null, message);
 	}
 
@@ -318,7 +318,7 @@ public class Utils {
 	}
 
 	public File getLogFile() {
-		File folder = getStorageSubFolder("puzzleMeLog");
+		File folder = getStorageSubFolder(Utils.APP_NAME + "Log");
 		File log = new File(folder, "app.log");
 		return log;
 	}

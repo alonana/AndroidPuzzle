@@ -5,7 +5,8 @@
     <string name="credits">Credits</string>
     <string name="gallery">Load a picture</string>
     <string name="camera">Take a picture</string>
-    <string name="start">Start!</string>
+    <string name="start">Start Puzzle!</string>
+    <string name="send">Send Puzzle!</string>
     <string name="preview">Puzzle Preview</string>
     <string name="newGame">New Puzzle</string>
     <string name="newNetworkGame">Puzzle with others</string>
@@ -25,7 +26,7 @@
     <string name="size6">6 x 6</string>
     <string name="score">Score:</string>
     <string name="scoreInitial">000</string>
-    <string name="eulaDummy">fdlslkjfds kljfsd kljfdsh lk</string>
+    <string name="eulaDummy">dummy EULA text, will be replaced at runtime</string>
     <string name="currentScore">current score is 9877</string>
     <string name="leadersBoard">Leaders Board</string>
     <string name="achievements">Achievements</string>
@@ -42,9 +43,10 @@
     <string name="action_settings">Settings</string>
     <string name="cleanLog">Clean Log</string>
     <string name="logDummy">Dummy text for log</string>
-    <string name="inviteFriend">Invite Friend</string>
+    <string name="inviteFriend">Invite a Friend</string>
     <string name="invitationInbox">Invitations Inbox</string>
     <string name="wall">The Wall</string>
     <string name="cleanSettings">Clean Settings</string>
+    <string name="sendPuzzle">Send Puzzle to a Friend</string>
     
 </resources>

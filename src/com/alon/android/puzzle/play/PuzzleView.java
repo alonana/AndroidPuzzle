@@ -426,8 +426,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 
 				String boardId = m_fragment.getMainActivity().getString(
 						R.string.leaderboard_id);
-				Games.Leaderboards.submitScore(m_fragment.getMainActivity()
-						.getApiClient(), boardId, newScore);
+				Games.Leaderboards.submitScore(m_fragment.getApiClient(),
+						boardId, newScore);
 
 				int size = (int) Math.sqrt(m_parts.size());
 				int achievementId;
@@ -452,8 +452,8 @@ public class PuzzleView extends View implements View.OnTouchListener {
 				}
 				String achievement = m_fragment.getMainActivity().getString(
 						achievementId);
-				Games.Achievements.unlock(m_fragment.getMainActivity()
-						.getApiClient(), achievement);
+				Games.Achievements.unlock(m_fragment.getApiClient(),
+						achievement);
 			}
 		});
 		dialog.show();

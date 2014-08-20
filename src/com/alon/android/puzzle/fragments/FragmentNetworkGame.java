@@ -28,7 +28,6 @@ import com.alon.android.puzzle.lazylist.ListItemData;
 import com.alon.android.puzzle.play.PartStatus;
 import com.alon.android.puzzle.play.PuzzleView;
 import com.alon.android.puzzle.play.ScoreEvent;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
@@ -143,7 +142,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		progressCreate("Invitation inbox in progress");
 
 		Intent intent = Games.Invitations
-				.getInvitationInboxIntent(getMainActivity().getApiClient());
+				.getInvitationInboxIntent(getApiClient());
 		startActivityForResult(intent, RC_INVITATION_INBOX);
 	}
 
@@ -151,7 +150,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		progressCreate("Inviting game in progress");
 
 		Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(
-				getMainActivity().getApiClient(), 1, 1);
+				getApiClient(), 1, 1);
 		startActivityForResult(intent, RC_SELECT_PLAYERS);
 	}
 
@@ -165,8 +164,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		builder.setAutoMatchCriteria(autoMatch);
 		RoomConfig roomConfig = builder.build();
 
-		Games.RealTimeMultiplayer.create(getMainActivity().getApiClient(),
-				roomConfig);
+		Games.RealTimeMultiplayer.create(getApiClient(), roomConfig);
 	}
 
 	private RoomConfig.Builder createRoomConfigBuilder() {
@@ -309,7 +307,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		m_room = room;
 
 		Intent intent = Games.RealTimeMultiplayer.getWaitingRoomIntent(
-				getMainActivity().getApiClient(), room, Integer.MAX_VALUE);
+				getApiClient(), room, Integer.MAX_VALUE);
 		startActivityForResult(intent, RC_WAITING_ROOM);
 	}
 
@@ -355,8 +353,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		builder.setVariant(getGameSettings().getPieces());
 		RoomConfig roomConfig = builder.setInvitationIdToAccept(
 				invitation.getInvitationId()).build();
-		Games.RealTimeMultiplayer.join(getMainActivity().getApiClient(),
-				roomConfig);
+		Games.RealTimeMultiplayer.join(getApiClient(), roomConfig);
 	}
 
 	private void handleInviteResult(int response, Intent data) {
@@ -390,8 +387,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 		}
 		RoomConfig roomConfig = builder.build();
 
-		Games.RealTimeMultiplayer.create(getMainActivity().getApiClient(),
-				roomConfig);
+		Games.RealTimeMultiplayer.create(getApiClient(), roomConfig);
 	}
 
 	private void handleRoomWaitingResult(int response) throws Exception {
@@ -409,10 +405,9 @@ public class FragmentNetworkGame extends FragmentBase implements
 			return;
 		}
 
-		if (getMainActivity().getApiClient().isConnected()
-				&& getMainActivity().isSignedIn()) {
-			Games.RealTimeMultiplayer.leave(getMainActivity().getApiClient(),
-					this, m_room.getRoomId());
+		if (getApiClient().isConnected() && getMainActivity().isSignedIn()) {
+			Games.RealTimeMultiplayer.leave(getApiClient(), this,
+					m_room.getRoomId());
 		}
 		m_room = null;
 
@@ -531,8 +526,7 @@ public class FragmentNetworkGame extends FragmentBase implements
 	private void loadParticipants() {
 		progressUpdate("Loading participants list");
 
-		String myPlayerId = Games.Players.getCurrentPlayerId(getMainActivity()
-				.getApiClient());
+		String myPlayerId = Games.Players.getCurrentPlayerId(getApiClient());
 		String myParticipantId = m_room.getParticipantId(myPlayerId);
 
 		m_participants = new LinkedList<String>();
@@ -565,17 +559,16 @@ public class FragmentNetworkGame extends FragmentBase implements
 	}
 
 	private void sendMessage(boolean reliable, byte[] message) {
-		GoogleApiClient api = getMainActivity().getApiClient();
 		String roomId = m_room.getRoomId();
 
 		if (reliable) {
 			for (String participantId : m_participants) {
-				Games.RealTimeMultiplayer.sendReliableMessage(api, this,
-						message, roomId, participantId);
+				Games.RealTimeMultiplayer.sendReliableMessage(getApiClient(),
+						this, message, roomId, participantId);
 			}
 		} else {
-			Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(api,
-					message, roomId);
+			Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(
+					getApiClient(), message, roomId);
 		}
 	}
 

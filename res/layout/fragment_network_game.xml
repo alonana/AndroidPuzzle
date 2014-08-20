@@ -40,4 +40,5 @@
         android:drawableLeft="@drawable/ic_action_play"
         android:text="@string/invitationInbox" />
 
+
 </LinearLayout>

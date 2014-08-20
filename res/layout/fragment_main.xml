@@ -58,6 +58,14 @@
         android:drawableLeft="@drawable/ic_action_play"
         android:text="@string/newNetworkGame" />
 
+    <Button
+        android:id="@+id/btnSendPuzzle"
+        style="@style/btnStyleSandrift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_action_play"
+        android:text="@string/sendPuzzle" />
+
     <TextView
         android:id="@+id/textSignDescription"
         android:layout_width="wrap_content"
