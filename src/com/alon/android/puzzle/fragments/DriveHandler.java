@@ -1,25 +1,28 @@
 package com.alon.android.puzzle.fragments;
 
-import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import android.os.ParcelFileDescriptor;
 
 import com.alon.android.puzzle.Utils;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Contents;
 import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveApi.ContentsResult;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveFolder.DriveFileResult;
-import com.google.android.gms.drive.DriveFolder.DriveFolderResult;
 import com.google.android.gms.drive.MetadataChangeSet;
 
 public class DriveHandler {
 
 	private GoogleApiClient m_apiClient;
 	private Utils m_utils;
+	private DriveFile m_file;
 
 	public DriveHandler(FragmentNewGame fragment) {
 		m_apiClient = fragment.getApiClient();
@@ -27,108 +30,97 @@ public class DriveHandler {
 	}
 
 	public void createImage() {
-		driveCreateFolder();
+		Drive.DriveApi.newContents(m_apiClient).setResultCallback(
+				driverContentsCallback);
 	}
 
-	private void driveCreateFolder() {
-		MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(
-				"New folder").build();
-
-		DriveFolder root = Drive.DriveApi.getRootFolder(m_apiClient);
-		PendingResult<DriveFolder.DriveFolderResult> result = root
-				.createFolder(m_apiClient, changeSet);
-		result.setResultCallback(new ResultCallback<DriveFolder.DriveFolderResult>() {
-
-			@Override
-			public void onResult(DriveFolderResult result) {
-				if (!result.getStatus().isSuccess()) {
-					String message = "Error creating folder "
-							+ result.getStatus().getStatusCode() + ":"
-							+ result.getStatus().getStatusMessage();
-					m_utils.handleError(null, message);
-					return;
-				}
-
-				driveCreateContent(result.getDriveFolder());
+	final private ResultCallback<ContentsResult> driverContentsCallback = new ResultCallback<ContentsResult>() {
+		@Override
+		public void onResult(ContentsResult result) {
+			if (!checkStatus(result.getStatus(), "open drive content")) {
+				return;
 			}
-		});
-	}
 
-	protected void driveCreateContent(final DriveFolder driveFolder) {
-		PendingResult<ContentsResult> result = Drive.DriveApi
-				.newContents(m_apiClient);
-		result.setResultCallback(new ResultCallback<DriveApi.ContentsResult>() {
+			try {
+				DriveFolder appDataFolder = Drive.DriveApi
+						.getAppFolder(m_apiClient);
+				Contents contents = result.getContents();
 
-			@Override
-			public void onResult(ContentsResult result) {
-				if (!result.getStatus().isSuccess()) {
-					String message = "Error creating contents "
-							+ result.getStatus().getStatusCode() + ":"
-							+ result.getStatus().getStatusMessage();
-					m_utils.handleError(null, message);
-					return;
-				}
+				MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+						.setTitle("Newfile2").setMimeType("puzzle/internal")
+						.build();
 
-				driveCreateFile(driveFolder, result.getContents());
+				FileOutputStream output = new FileOutputStream(contents
+						.getParcelFileDescriptor().getFileDescriptor());
+				output.write("Hello World!".getBytes());
+				output.close();
+
+				appDataFolder.createFile(m_apiClient, changeSet, contents)
+						.setResultCallback(fileCallback);
+			} catch (Exception e) {
+				m_utils.handleError(e);
 			}
-		});
-	}
-
-	private void driveCreateFile(DriveFolder driveFolder, Contents contents) {
-
-		MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-				.setTitle("New file").setMimeType("text/plain").build();
-
-		PendingResult<DriveFileResult> result = driveFolder.createFile(
-				m_apiClient, changeSet, contents);
-		result.setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
-
-			@Override
-			public void onResult(DriveFileResult result) {
-				if (!result.getStatus().isSuccess()) {
-					String message = "Error creating file "
-							+ result.getStatus().getStatusCode() + ":"
-							+ result.getStatus().getStatusMessage();
-					m_utils.handleError(null, message);
-					return;
-				}
-
-				driveOpenFile(result.getDriveFile());
-			}
-		});
-	}
-
-	private void driveOpenFile(final DriveFile driveFile) {
-		PendingResult<ContentsResult> result = driveFile.openContents(
-				m_apiClient, DriveFile.MODE_WRITE_ONLY, null);
-		result.setResultCallback(new ResultCallback<DriveApi.ContentsResult>() {
-
-			@Override
-			public void onResult(ContentsResult result) {
-				if (!result.getStatus().isSuccess()) {
-					String message = "Error openning file "
-							+ result.getStatus().getStatusCode() + ":"
-							+ result.getStatus().getStatusMessage();
-					m_utils.handleError(null, message);
-					return;
-				}
-
-				driveSetFileContent(driveFile, result.getContents());
-			}
-		});
-	}
-
-	private void driveSetFileContent(DriveFile driveFile, Contents contents) {
-		try {
-			OutputStream out = contents.getOutputStream();
-			out.write("aaa".getBytes());
-			out.close();
-			contents.close();
-			driveFile.commitAndCloseContents(m_apiClient, contents);
-			m_utils.message("done");
-		} catch (Exception e) {
-			m_utils.handleError(e);
 		}
-	}
+	};
 
+	final private ResultCallback<DriveFileResult> fileCallback = new ResultCallback<DriveFileResult>() {
+
+		@Override
+		public void onResult(DriveFileResult result) {
+			if (!checkStatus(result.getStatus(), "creating new file")) {
+				return;
+			}
+
+			m_file = result.getDriveFile();
+			m_file.openContents(m_apiClient, DriveFile.MODE_WRITE_ONLY, null)
+					.setResultCallback(fileConentCallback);
+		}
+	};
+
+	final private ResultCallback<ContentsResult> fileConentCallback = new ResultCallback<ContentsResult>() {
+		@Override
+		public void onResult(ContentsResult result) {
+			if (!checkStatus(result.getStatus(), "creating file content")) {
+				return;
+			}
+
+			try {
+				Contents contents = result.getContents();
+
+				ParcelFileDescriptor parcelFileDescriptor = contents
+						.getParcelFileDescriptor();
+
+				FileOutputStream fileOutputStream = new FileOutputStream(
+						parcelFileDescriptor.getFileDescriptor());
+				Writer writer = new OutputStreamWriter(fileOutputStream);
+				writer.write("hello world");
+				writer.close();
+				m_file.commitAndCloseContents(m_apiClient, contents)
+						.setResultCallback(fileCommitCallback);
+				m_utils.message("commit file success");
+			} catch (Exception e) {
+				m_utils.handleError(e);
+			}
+		}
+	};
+
+	final private ResultCallback<Status> fileCommitCallback = new ResultCallback<Status>() {
+		@Override
+		public void onResult(Status result) {
+
+			if (!checkStatus(result.getStatus(), "committing file")) {
+				return;
+			}
+		}
+	};
+
+	private boolean checkStatus(Status status, String description) {
+		if (status.isSuccess()) {
+			return true;
+		}
+		String message = "Error " + description + status.getStatusCode() + ":"
+				+ status.getStatusMessage();
+		m_utils.handleError(null, message);
+		return false;
+	}
 }
