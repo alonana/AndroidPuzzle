@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,12 +25,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.alon.android.puzzle.R;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.plus.PlusShare;
 
 public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		OnClickListener {
 
 	private static final int SELECT_PHOTO = 100;
 	private static final int TAKE_PHOTO = 101;
+	private static final int START_SHARE = 102;
 
 	private View m_topView;
 	private boolean m_inAction;
@@ -228,11 +233,31 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	private void startPuzzle() {
 		if (getMainActivity().isSendToFriend()) {
 			getUtils().playSound(R.raw.click);
-			new DriveHandler(this).createImage();
+			share();
 		} else {
 			getUtils().playSound(R.raw.start);
 			getMainActivity().setFragmentPuzzle(null);
 		}
+	}
+
+	private void share() {
+		int errorCode = GooglePlayServicesUtil
+				.isGooglePlayServicesAvailable(getMainActivity());
+		if (errorCode != ConnectionResult.SUCCESS) {
+			getUtils().message(
+					"Google+ application must be installed before using this");
+			return;
+		}
+
+		Uri selectedImage = getGameSettings().getImageAsUri();
+		ContentResolver resolver = getMainActivity().getContentResolver();
+		String mime = resolver.getType(selectedImage);
+
+		PlusShare.Builder share = new PlusShare.Builder(getMainActivity());
+		share.setText("hello everyone!");
+		share.addStream(selectedImage);
+		share.setType(mime);
+		startActivityForResult(share.getIntent(), START_SHARE);
 	}
 
 	@Override

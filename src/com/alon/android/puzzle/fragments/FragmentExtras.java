@@ -13,7 +13,7 @@ import com.alon.android.puzzle.ActivityMain;
 import com.alon.android.puzzle.R;
 import com.google.android.gms.games.Games;
 
-public class FragmentWall extends FragmentBase implements OnClickListener {
+public class FragmentExtras extends FragmentBase implements OnClickListener {
 
 	private static final int REQUEST_LEADERBOARD = 101;
 	private static final int REQUEST_ACHIEVEMENTS = 102;
@@ -35,7 +35,7 @@ public class FragmentWall extends FragmentBase implements OnClickListener {
 			throws Exception {
 		getUtils().loadSound(R.raw.click);
 
-		m_topView = inflater.inflate(R.layout.fragment_wall, container, false);
+		m_topView = inflater.inflate(R.layout.fragment_extras, container, false);
 
 		m_topView.findViewById(R.id.btnLeaders).setOnClickListener(this);
 		m_topView.findViewById(R.id.btnAchievements).setOnClickListener(this);

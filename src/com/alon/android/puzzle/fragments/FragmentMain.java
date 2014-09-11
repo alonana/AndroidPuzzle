@@ -152,7 +152,7 @@ public class FragmentMain extends FragmentBase implements OnClickListener {
 			break;
 		case R.id.btnWall:
 			getUtils().playSound(R.raw.click);
-			getMainActivity().setFragmentWall();
+			getMainActivity().setFragmentExtras();
 			break;
 		}
 	}
