@@ -6,7 +6,7 @@
     <string name="gallery">Load a picture</string>
     <string name="camera">Take a picture</string>
     <string name="start">Start Puzzle!</string>
-    <string name="send">Send Puzzle!</string>
+    <string name="send">Share Puzzle in Google+</string>
     <string name="preview">Puzzle Preview</string>
     <string name="newGame">New Puzzle</string>
     <string name="newNetworkGame">Puzzle with others</string>
@@ -47,6 +47,6 @@
     <string name="invitationInbox">Invitations Inbox</string>
     <string name="wall">Extras</string>
     <string name="cleanSettings">Clean Settings</string>
-    <string name="sendPuzzle">Send Puzzle to a Friend</string>
+    <string name="sendPuzzle">Send puzzle to friend</string>
     
 </resources>

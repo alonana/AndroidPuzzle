@@ -40,15 +40,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NewGameActivity" >
-        </activity>
-        <activity android:name=".play.PuzzleActivity" >
-        </activity>
-        <activity android:name=".PiecesActivity" >
-        </activity>
         <activity
             android:name=".ActivityDeveloper"
             android:label="@string/title_activity_logs" >
+        </activity>
+        <activity android:name=".ActivityParseDeepLink" >
+            <intent-filter>
+                <action android:name="com.google.android.apps.plus.VIEW_DEEP_LINK" />
+
+                <data android:scheme="vnd.google.deeplink" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+        <activity android:name="ActivityDeepLink" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data
+                    android:scheme="puzzleme" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
         </activity>
     </application>
 

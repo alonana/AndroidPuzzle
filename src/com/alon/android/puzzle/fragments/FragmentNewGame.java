@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -241,23 +240,44 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	private void share() {
-		int errorCode = GooglePlayServicesUtil
-				.isGooglePlayServicesAvailable(getMainActivity());
-		if (errorCode != ConnectionResult.SUCCESS) {
+
+		if (!isGooglePlusInstalled()) {
 			getUtils().message(
-					"Google+ application must be installed before using this");
+					"Download and install Google+ application to share puzzle");
 			return;
 		}
 
-		Uri selectedImage = getGameSettings().getImageAsUri();
-		ContentResolver resolver = getMainActivity().getContentResolver();
-		String mime = resolver.getType(selectedImage);
-
 		PlusShare.Builder share = new PlusShare.Builder(getMainActivity());
-		share.setText("hello everyone!");
-		share.addStream(selectedImage);
-		share.setType(mime);
+		share.setText("Use Android device to solve my puzzle");
+		share.setType("text/plain");
+		// url on the web
+		share.setContentUrl(Uri
+				.parse("puzzleme://play.google.com/store/apps/details?id=com.alon.android.puzzle&a=2"));
+		// actual deep link
+		share.setContentDeepLinkId("puzzleme://play.google.com/store/apps/details?id=com.alon.android.puzzle&a=3");
+
+		// Uri selectedImage = getGameSettings().getImageAsUri();
+		// ContentResolver resolver = getMainActivity().getContentResolver();
+		// String mime = resolver.getType(selectedImage);
+		// share.addStream(selectedImage).getIntent();
+
 		startActivityForResult(share.getIntent(), START_SHARE);
+	}
+
+	private boolean isGooglePlusInstalled() {
+		int errorCode = GooglePlayServicesUtil
+				.isGooglePlayServicesAvailable(getMainActivity());
+		if (errorCode != ConnectionResult.SUCCESS) {
+			return false;
+		}
+
+		try {
+			getMainActivity().getPackageManager().getApplicationInfo(
+					"com.google.android.apps.plus", 0);
+			return true;
+		} catch (PackageManager.NameNotFoundException e) {
+			return false;
+		}
 	}
 
 	@Override
