@@ -27,6 +27,9 @@
             android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/app_id" />
         <meta-data
+            android:name="com.google.android.apps.drive.APP_ID"
+            android:value="@string/app_id" />
+        <meta-data
             android:name="com.google.android.gms.appstate.APP_ID"
             android:value="@string/app_id" />
         <meta-data
@@ -57,8 +60,8 @@
         <activity android:name="ActivityDeepLink" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-                <data
-                    android:scheme="puzzleme" />
+
+                <data android:scheme="puzzleme" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

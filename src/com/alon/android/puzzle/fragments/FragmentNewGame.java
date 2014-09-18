@@ -23,6 +23,7 @@ import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.alon.android.puzzle.GoogleDriveHandler;
 import com.alon.android.puzzle.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -232,15 +233,24 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	private void startPuzzle() {
 		if (getMainActivity().isSendToFriend()) {
 			getUtils().playSound(R.raw.click);
-			share();
+			sendPuzzle();
 		} else {
 			getUtils().playSound(R.raw.start);
 			getMainActivity().setFragmentPuzzle(null);
 		}
 	}
 
-	private void share() {
+	@SuppressWarnings("unused")
+	private void sendPuzzle() {
+		new GoogleDriveHandler(this).createFile(getGameSettings()
+				.getImageAsUri());
 
+		if (false) {
+			share();
+		}
+	}
+
+	private void share() {
 		if (!isGooglePlusInstalled()) {
 			getUtils().message(
 					"Download and install Google+ application to share puzzle");
@@ -248,11 +258,11 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		}
 
 		PlusShare.Builder share = new PlusShare.Builder(getMainActivity());
-		share.setText("Use Android device to solve my puzzle");
+		share.setText("Use an Android device to solve my puzzle");
 		share.setType("text/plain");
 		// url on the web
 		share.setContentUrl(Uri
-				.parse("puzzleme://play.google.com/store/apps/details?id=com.alon.android.puzzle&a=2"));
+				.parse("http://play.google.com/store/apps/details?id=com.alon.android.puzzle"));
 		// actual deep link
 		share.setContentDeepLinkId("puzzleme://play.google.com/store/apps/details?id=com.alon.android.puzzle&a=3");
 

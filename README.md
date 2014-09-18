@@ -30,10 +30,18 @@ under project, properties, android, library, check isLibrary
 under project, properties, android, library, add: appcompat_v7 and google-play-services_lib
 
 ***
-fix GameHelper.Java, line 859, from:
+fix GameHelper.Java
+
+line 859, from:
    if (mConnectionResult.hasResolution() ) {
 to
    if (mConnectionResult.hasResolution() && (mActivity != null)) {
+
+
+line 298, from:
+			builder.addScope(Drive.SCOPE_APPFOLDER);
+to:			
+			builder.addScope(Drive.SCOPE_FILE);
  
 
 ***
