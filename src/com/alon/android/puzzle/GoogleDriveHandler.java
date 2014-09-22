@@ -1,5 +1,6 @@
 package com.alon.android.puzzle;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -54,10 +55,11 @@ public class GoogleDriveHandler {
 				return;
 			}
 
+			String name = new File(m_filePath).getName();
 			Contents contents = result.getContents();
 			MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-					.setTitle("PuzzleMeImage").setMimeType("image/jpeg")
-					.setStarred(true).build();
+					.setTitle(name).setMimeType("image/jpeg").setStarred(true)
+					.build();
 
 			// create a file on root folder
 			Drive.DriveApi.getRootFolder(m_api)

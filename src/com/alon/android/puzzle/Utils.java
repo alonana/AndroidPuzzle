@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,6 +29,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -77,17 +79,15 @@ public class Utils {
 	public Bitmap decodeSampledBitmapFromUri(Uri selectedImage, int reqWidth,
 			int reqHeight) throws Exception {
 		// First decode with inJustDecodeBounds=true to check dimensions
-		final BitmapFactory.Options options = new BitmapFactory.Options();
+		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
 		InputStream in = getImageStream(selectedImage);
 		BitmapFactory.decodeStream(in, null, options);
 		in.close();
 
-		// Calculate inSampleSize
 		options.inSampleSize = calculateInSampleSize(options, reqWidth,
 				reqHeight);
 
-		// Decode bitmap with inSampleSize set
 		options.inJustDecodeBounds = false;
 		in = getImageStream(selectedImage);
 		Bitmap result = BitmapFactory.decodeStream(in, null, options);
@@ -278,7 +278,8 @@ public class Utils {
 	private void downloadInBackground(ListItemData item,
 			InterfacePostDownload postDownload) throws Exception {
 		File storage = getStorageSubFolder("download");
-		File image = new File(storage, item.getName());
+
+		File image = new File(storage, item.getName() + ".jpg");
 		if (!image.exists()) {
 			Utils.saveFileFromUrl(item.getUrlBig(), image);
 		}
@@ -322,4 +323,18 @@ public class Utils {
 		File log = new File(folder, "app.log");
 		return log;
 	}
+
+	public File getNewFile() throws IOException {
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+				.format(new Date());
+		String imageFileName = "PuzzleMe_" + timeStamp + "_";
+		File storageDir = Environment
+				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		if (!storageDir.exists()) {
+			storageDir.mkdirs();
+		}
+		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
+		return file;
+	}
+
 }

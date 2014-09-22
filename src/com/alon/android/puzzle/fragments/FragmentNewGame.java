@@ -1,17 +1,17 @@
 package com.alon.android.puzzle.fragments;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.io.FileOutputStream;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +31,9 @@ import com.google.android.gms.plus.PlusShare;
 
 public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		OnClickListener {
+
+	private static final int SEND_WIDTH = 1024;
+	private static final int SEND_HEIGHT = 1024;
 
 	private static final int SELECT_PHOTO = 100;
 	private static final int TAKE_PHOTO = 101;
@@ -218,19 +221,11 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	private void createImageFile() throws Exception {
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
-				.format(new Date());
-		String imageFileName = "JPEG_" + timeStamp + "_";
-		File storageDir = Environment
-				.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-		if (!storageDir.exists()) {
-			storageDir.mkdirs();
-		}
-		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
+		File file = getUtils().getNewFile();
 		m_cameraOutputUri = Uri.fromFile(file);
 	}
 
-	private void startPuzzle() {
+	private void startPuzzle() throws Exception {
 		if (getMainActivity().isSendToFriend()) {
 			getUtils().playSound(R.raw.click);
 			sendPuzzle();
@@ -241,12 +236,121 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	}
 
 	@SuppressWarnings("unused")
-	private void sendPuzzle() {
-		new GoogleDriveHandler(this).createFile(getGameSettings()
-				.getImageAsUri());
+	private void sendPuzzle() throws Exception {
+
+		Uri scrabbled = scrabble();
+		descrabble(scrabbled);
+		new GoogleDriveHandler(this).createFile(scrabbled);
 
 		if (false) {
 			share();
+		}
+	}
+
+	private Uri scrabble() throws Exception {
+
+		Bitmap source = getUtils().decodeSampledBitmapFromUri(
+				getGameSettings().getImageAsUri(), SEND_WIDTH, SEND_HEIGHT);
+		Bitmap target = source.copy(Bitmap.Config.ARGB_8888, true);
+		Canvas canvas = new Canvas(target);
+		scrabble(source, canvas);
+		File puzzledFile = getUtils().getNewFile();
+		FileOutputStream out = new FileOutputStream(puzzledFile.getPath());
+		target.compress(Bitmap.CompressFormat.JPEG, 100, out);
+		out.flush();
+		out.close();
+		return Uri.fromFile(puzzledFile);
+	}
+
+	private Uri descrabble(Uri scrabbled) throws Exception {
+		Bitmap source = getUtils().decodeSampledBitmapFromUri(scrabbled,
+				SEND_WIDTH, SEND_HEIGHT);
+		Bitmap target = source.copy(Bitmap.Config.ARGB_8888, true);
+		Canvas canvas = new Canvas(target);
+		descrabble(source, canvas);
+		File depuzzledFile = getUtils().getNewFile();
+		FileOutputStream out = new FileOutputStream(depuzzledFile.getPath());
+		target.compress(Bitmap.CompressFormat.JPEG, 100, out);
+		out.flush();
+		out.close();
+		return Uri.fromFile(depuzzledFile);
+	}
+
+	private void scrabble(Bitmap source, Canvas canvas) {
+		int width = source.getWidth();
+		int height = source.getHeight();
+		int midWidth = width / 2;
+		int midHeight = height / 2;
+		scrabble(source, canvas, 0, midWidth, 0, midHeight);
+		scrabble(source, canvas, 0, midWidth, midHeight, height);
+		scrabble(source, canvas, midWidth, width, 0, midHeight);
+		scrabble(source, canvas, midWidth, width, midHeight, height);
+	}
+
+	private void descrabble(Bitmap source, Canvas canvas) {
+		int width = source.getWidth();
+		int height = source.getHeight();
+		int midWidth = width / 2;
+		int midHeight = height / 2;
+		descrabble(source, canvas, 0, midWidth, 0, midHeight);
+		descrabble(source, canvas, 0, midWidth, midHeight, height);
+		descrabble(source, canvas, midWidth, width, 0, midHeight);
+		descrabble(source, canvas, midWidth, width, midHeight, height);
+	}
+
+	private void scrabble(Bitmap source, Canvas canvas, int startX, int endX,
+			int startY, int endY) {
+		Paint paint = new Paint();
+		paint.setStyle(Paint.Style.FILL);
+		int blockHeight = endY - startY;
+
+		int sequence = 0;
+		for (int x = startX; x < endX; x++) {
+			for (int y = startY; y < endY; y++) {
+
+				int diff = sequence % 256;
+				int color = source.getPixel(x, y);
+				int a = Color.alpha(color);
+				int r = diff - Color.red(color);
+				int g = diff - Color.green(color);
+				int b = diff - Color.blue(color);
+				int newColor = Color.argb(a, r, g, b);
+				paint.setColor(newColor);
+
+				int targetX = x;
+				int targetY = startY + (y + x) % blockHeight;
+				canvas.drawPoint(targetX, targetY, paint);
+				sequence++;
+			}
+		}
+	}
+
+	private void descrabble(Bitmap source, Canvas canvas, int startX, int endX,
+			int startY, int endY) {
+		Paint paint = new Paint();
+		paint.setStyle(Paint.Style.FILL);
+		int blockHeight = endY - startY;
+
+		int sequence = 0;
+		for (int x = startX; x < endX; x++) {
+			for (int y = startY; y < endY; y++) {
+
+				int sourceX = x;
+				int sourceY = startY + (y + x) % blockHeight;
+
+				int color = source.getPixel(sourceX, sourceY);
+
+				int diff = sequence % 256;
+				int a = Color.alpha(color);
+				int r = diff - Color.red(color);
+				int g = diff - Color.green(color);
+				int b = diff - Color.blue(color);
+				int newColor = Color.argb(a, r, g, b);
+				paint.setColor(newColor);
+
+				canvas.drawPoint(x, y, paint);
+				sequence++;
+			}
 		}
 	}
 
