@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -324,7 +323,11 @@ public class Utils {
 		return log;
 	}
 
-	public File getNewFile() throws IOException {
+	public File getNewImage() throws Exception {
+		return getNewFile("png");
+	}
+
+	public File getNewFile(String extension) throws Exception {
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
 				.format(new Date());
 		String imageFileName = "PuzzleMe_" + timeStamp + "_";
@@ -333,7 +336,8 @@ public class Utils {
 		if (!storageDir.exists()) {
 			storageDir.mkdirs();
 		}
-		File file = File.createTempFile(imageFileName, ".jpg", storageDir);
+		File file = File.createTempFile(imageFileName, "." + extension,
+				storageDir);
 		return file;
 	}
 

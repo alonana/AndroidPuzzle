@@ -215,14 +215,10 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 				.resolveActivity(getActivity().getPackageManager()) == null) {
 			return;
 		}
-		createImageFile();
+		File file = getUtils().getNewImage();
+		m_cameraOutputUri = Uri.fromFile(file);
 		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, m_cameraOutputUri);
 		startActivityForResult(takePictureIntent, TAKE_PHOTO);
-	}
-
-	private void createImageFile() throws Exception {
-		File file = getUtils().getNewFile();
-		m_cameraOutputUri = Uri.fromFile(file);
 	}
 
 	private void startPuzzle() throws Exception {
@@ -239,10 +235,10 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 	private void sendPuzzle() throws Exception {
 
 		Uri scrabbled = scrabble();
-		descrabble(scrabbled);
 		new GoogleDriveHandler(this).createFile(scrabbled);
 
 		if (false) {
+			descrabble(scrabbled);
 			share();
 		}
 	}
@@ -254,9 +250,9 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		Bitmap target = source.copy(Bitmap.Config.ARGB_8888, true);
 		Canvas canvas = new Canvas(target);
 		scrabble(source, canvas);
-		File puzzledFile = getUtils().getNewFile();
+		File puzzledFile = getUtils().getNewImage();
 		FileOutputStream out = new FileOutputStream(puzzledFile.getPath());
-		target.compress(Bitmap.CompressFormat.JPEG, 100, out);
+		target.compress(Bitmap.CompressFormat.PNG, 100, out);
 		out.flush();
 		out.close();
 		return Uri.fromFile(puzzledFile);
@@ -268,7 +264,7 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		Bitmap target = source.copy(Bitmap.Config.ARGB_8888, true);
 		Canvas canvas = new Canvas(target);
 		descrabble(source, canvas);
-		File depuzzledFile = getUtils().getNewFile();
+		File depuzzledFile = getUtils().getNewImage();
 		FileOutputStream out = new FileOutputStream(depuzzledFile.getPath());
 		target.compress(Bitmap.CompressFormat.JPEG, 100, out);
 		out.flush();
@@ -308,17 +304,19 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 		for (int x = startX; x < endX; x++) {
 			for (int y = startY; y < endY; y++) {
 
-				int diff = sequence % 256;
 				int color = source.getPixel(x, y);
 				int a = Color.alpha(color);
-				int r = diff - Color.red(color);
-				int g = diff - Color.green(color);
-				int b = diff - Color.blue(color);
+				int r = scrabbleColor(Color.red(color), sequence);
+				int g = scrabbleColor(Color.green(color), sequence);
+				int b = scrabbleColor(Color.blue(color), sequence);
 				int newColor = Color.argb(a, r, g, b);
 				paint.setColor(newColor);
 
 				int targetX = x;
 				int targetY = startY + (y + x) % blockHeight;
+				if ((targetX == 0) && (targetY == 0)) {
+					System.out.println(newColor);
+				}
 				canvas.drawPoint(targetX, targetY, paint);
 				sequence++;
 			}
@@ -339,12 +337,14 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 				int sourceY = startY + (y + x) % blockHeight;
 
 				int color = source.getPixel(sourceX, sourceY);
+				if ((x == 0) && (y == 0)) {
+					System.out.println(color);
+				}
 
-				int diff = sequence % 256;
 				int a = Color.alpha(color);
-				int r = diff - Color.red(color);
-				int g = diff - Color.green(color);
-				int b = diff - Color.blue(color);
+				int r = descrabbleColor(Color.red(color), sequence);
+				int g = descrabbleColor(Color.green(color), sequence);
+				int b = descrabbleColor(Color.blue(color), sequence);
 				int newColor = Color.argb(a, r, g, b);
 				paint.setColor(newColor);
 
@@ -352,6 +352,19 @@ public class FragmentNewGame extends FragmentBase implements OnPreDrawListener,
 				sequence++;
 			}
 		}
+	}
+
+	private int scrabbleColor(int color, int sequence) {
+		int result = (color + sequence) % 256;
+		return result;
+	}
+
+	private int descrabbleColor(int color, int sequence) {
+		int result = (color - sequence) % 256;
+		if (result < 0) {
+			result += 256;
+		}
+		return result;
 	}
 
 	private void share() {

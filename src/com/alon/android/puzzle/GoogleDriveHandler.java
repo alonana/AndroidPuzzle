@@ -23,7 +23,7 @@ public class GoogleDriveHandler {
 	private GoogleApiClient m_api;
 	private DriveFile m_googleFile;
 	private Utils m_utils;
-	private String m_filePath;
+	private String m_fileLocalPath;
 
 	public GoogleDriveHandler(FragmentBase fragment) {
 		m_api = fragment.getApiClient();
@@ -44,7 +44,7 @@ public class GoogleDriveHandler {
 	}
 
 	public void createFile(Uri fileUri) {
-		m_filePath = fileUri.getPath();
+		m_fileLocalPath = fileUri.getPath();
 		Drive.DriveApi.newContents(m_api).setResultCallback(contentsCallback);
 	}
 
@@ -55,10 +55,10 @@ public class GoogleDriveHandler {
 				return;
 			}
 
-			String name = new File(m_filePath).getName();
+			String name = new File(m_fileLocalPath).getName();
 			Contents contents = result.getContents();
 			MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-					.setTitle(name).setMimeType("image/jpeg").setStarred(true)
+					.setTitle(name).setMimeType("image/png").setStarred(true)
 					.build();
 
 			// create a file on root folder
@@ -103,7 +103,7 @@ public class GoogleDriveHandler {
 			FileOutputStream out = new FileOutputStream(
 					parcelFileDescriptor.getFileDescriptor());
 
-			FileInputStream in = new FileInputStream(m_filePath);
+			FileInputStream in = new FileInputStream(m_fileLocalPath);
 			byte buffer[] = new byte[1024];
 			while (true) {
 				int read = in.read(buffer);
